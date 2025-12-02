@@ -12,8 +12,8 @@ import * as THREE from 'three';
 
 const projects = [
   {
-    title: "Kalsh Gas Price Forecasting",
-    description: "ARIMA-GARCH model for prediction markets. Competition winner. ROC AUC 0.998, 23% calibration improvement.",
+    title: "Kalshi Gas Price Forecasting",
+    description: "ARIMA-GARCH model for prediction markets. Competition finalist. ROC AUC 0.998, 23% calibration improvement.",
     year: "2025",
     month: "OCT",
     tags: ["Python", "TimeSeries Modeling", "ML", "QR"],
@@ -387,19 +387,20 @@ export default function FluidPortfolio() {
   useEffect(() => {
     const handleScroll = () => {
         // Only update scrollY if on home page to avoid unnecessary re-renders when deep in work page
-        // But parallax might need it. Optimized to only set state.
-        setScrollY(window.scrollY);
+        if (currentPage === 'home') {
+            setScrollY(window.scrollY);
+        }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [currentPage]);
 
   return (
     <div className="bg-[#0a0a0a] text-white min-h-screen relative selection:bg-white selection:text-black font-sans overflow-x-hidden">
       
       {/* Three.js Atmosphere (Dust) */}
       <div className="fixed inset-0 pointer-events-none z-30 mix-blend-screen">
-        <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
+        <Canvas camera={{ position: [0, 0, 5], fov: 60 }} dpr={[1, 2]} gl={{ antialias: false, powerPreference: "high-performance" }}>
             <DustParticles />
         </Canvas>
       </div>
