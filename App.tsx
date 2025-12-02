@@ -16,8 +16,8 @@ const projects = [
     description: "ARIMA-GARCH model for prediction markets. Competition winner. ROC AUC 0.998, 23% calibration improvement.",
     year: "2025",
     month: "OCT",
-    tags: ["Python", "TimeSeries Modeling", "ML"],
-    type: "Comptition", "Research"
+    tags: ["Python", "TimeSeries Modeling", "ML", "QR"],
+    type: "Comptition"
   },
 
   {
@@ -26,7 +26,7 @@ const projects = [
     year: "2025",
     month: "MAR",
     tags: ["WebGL", "Physics", "React"],
-    type: "Simulation", "Webapp"
+    type: "Simulation"
   },
   {
     title: "HUNL Poker CFR",
