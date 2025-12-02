@@ -12,35 +12,37 @@ import * as THREE from 'three';
 
 const projects = [
   {
+    title: "Kalsh Gas Price Forecasting",
+    description: "ARIMA-GARCH model for prediction markets. Competition winner. ROC AUC 0.998, 23% calibration improvement.",
+    year: "2025",
+    month: "OCT",
+    tags: ["Python", "TimeSeries Modeling", "ML"],
+    type: "Comptition", "Research"
+  },
+
+  {
     title: "Brownian Motion Webapp",
     description: "Interactive stochastic dynamics visualizer with parallelized Euler-Maruyama solver. <0.5% Monte Carlo error, 3× performance gain.",
     year: "2025",
     month: "MAR",
     tags: ["WebGL", "Physics", "React"],
-    type: "Simulation"
+    type: "Simulation", "Webapp"
   },
   {
     title: "HUNL Poker CFR",
     description: "Monte Carlo CFR engine for optimal poker strategy. 95% convergence, 90% memory reduction through abstraction clustering.",
     year: "2025",
-    month: "FEB",
-    tags: ["C++", "Game Theory", "AI"],
+    month: "JAN - MAR",
+    tags: ["C++", "Python", "Game Theory", "AI"],
     type: "Algorithm"
   },
-  {
-    title: "Gas Price Forecasting",
-    description: "ARIMA-GARCH model for prediction markets. Competition winner. ROC AUC 0.998, 23% calibration improvement.",
-    year: "2025",
-    month: "JAN",
-    tags: ["Python", "TimeSeries", "ML"],
-    type: "Research"
-  },
+
   {
     title: "EarthScope-AI",
     description: "3D UNet disaster classification pipeline. CDC finalist. Fuses satellite, DEM, and climate data with real-time segmentation.",
-    year: "2024",
-    month: "DEC",
-    tags: ["PyTorch", "Computer Vision", "Geo"],
+    year: "2025",
+    month: "Sep",
+    tags: ["PyTorch", "Computer Vision", "NASA-API"],
     type: "Deep Learning"
   }
 ];
