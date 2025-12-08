@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,19 +6,31 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { ArrowUpRight, ArrowLeft, Terminal, ImageIcon, Menu, X } from 'lucide-react';
+
+// --- TYPES ---
+
+type Page = 'home' | 'work' | 'writing';
+
+type ContentBlock = 
+  | { type: 'paragraph'; text: string }
+  | { type: 'header'; text: string }
+  | { type: 'code'; lang: string; code: string }
+  | { type: 'image'; caption: string };
+
+interface Post {
+    id: string;
+    title: string;
+    excerpt: string;
+    date: string;
+    readTime: string;
+    tag: string;
+    content: ContentBlock[];
+}
 
 // --- DATA ---
 
 const projects = [
-  {
-    title: "Kalshi Gas Price Forecasting",
-    description: "ARIMA-GARCH model for prediction markets. Competition finalist. ROC AUC 0.998, 23% calibration improvement.",
-    year: "2025",
-    month: "OCT",
-    tags: ["Python", "TimeSeries Modeling", "ML", "QR"],
-    type: "Comptition"
-  },
-
   {
     title: "Brownian Motion Webapp",
     description: "Interactive stochastic dynamics visualizer with parallelized Euler-Maruyama solver. <0.5% Monte Carlo error, 3× performance gain.",
@@ -32,18 +43,74 @@ const projects = [
     title: "HUNL Poker CFR",
     description: "Monte Carlo CFR engine for optimal poker strategy. 95% convergence, 90% memory reduction through abstraction clustering.",
     year: "2025",
-    month: "JAN - MAR",
-    tags: ["C++", "Python", "Game Theory", "AI"],
+    month: "FEB",
+    tags: ["C++", "Game Theory", "AI"],
     type: "Algorithm"
   },
-
+  {
+    title: "Gas Price Forecasting",
+    description: "ARIMA-GARCH model for prediction markets. Competition winner. ROC AUC 0.998, 23% calibration improvement.",
+    year: "2025",
+    month: "JAN",
+    tags: ["Python", "TimeSeries", "ML"],
+    type: "Research"
+  },
   {
     title: "EarthScope-AI",
     description: "3D UNet disaster classification pipeline. CDC finalist. Fuses satellite, DEM, and climate data with real-time segmentation.",
-    year: "2025",
-    month: "Sep",
-    tags: ["PyTorch", "Computer Vision", "NASA-API"],
+    year: "2024",
+    month: "DEC",
+    tags: ["PyTorch", "Computer Vision", "Geo"],
     type: "Deep Learning"
+  }
+];
+
+const posts: Post[] = [
+  {
+    id: "stochastic",
+    title: "The Unreasonable Effectiveness of Stochastic Calculus",
+    excerpt: "Exploring why Ito integrals map so perfectly to market mechanics, and where the analogy breaks down in high-volatility regimes.",
+    date: "2025.02.14",
+    readTime: "8 min",
+    tag: "Math",
+    content: [
+      { type: 'paragraph', text: "The mapping between heat diffusion and option pricing is one of the most beautiful coincidences in mathematical physics. When Black and Scholes derived their famous equation, they effectively treated money as a particle undergoing Brownian motion." },
+      { type: 'header', text: "The Diffusion Equation" },
+      { type: 'paragraph', text: "But why does this work? The central limit theorem does a lot of the heavy lifting. In a market with sufficient liquidity and independent actors, price movements tend to aggregate into normal distributions over logarithmic scales." },
+      { type: 'code', lang: 'python', code: `import numpy as np\n\ndef geometric_brownian_motion(S0, mu, sigma, T, dt):\n    N = int(T / dt)\n    t = np.linspace(0, T, N)\n    W = np.random.standard_normal(size=N)\n    W = np.cumsum(W) * np.sqrt(dt)\n    \n    # Ito's Lemma application\n    X = (mu - 0.5 * sigma**2) * t + sigma * W\n    return S0 * np.exp(X)` },
+      { type: 'paragraph', text: "However, the map is not the territory. In high-volatility regimes, the assumptions of continuous paths break down. We see jumps. We see heavy tails. The market behaves less like a diffusing particle and more like a turbulent flow." },
+      { type: 'image', caption: "Figure 1: Volatility clustering during the 2020 crash vs. Log-Normal prediction." },
+      { type: 'paragraph', text: "In this post, we'll implement a jump-diffusion model in Python and compare its calibration to standard Geometric Brownian Motion." }
+    ]
+  },
+  {
+    id: "react-perf",
+    title: "Optimizing React for High-Frequency Data",
+    excerpt: "Techniques for rendering 60fps visualizations without blocking the main thread. Using WebWorkers and OffscreenCanvas.",
+    date: "2025.01.20",
+    readTime: "12 min",
+    tag: "Engineering",
+    content: [
+      { type: 'paragraph', text: "React's reconciliation engine is a marvel of engineering, but it wasn't built for the firehose of data that comes from a real-time order book or a particle physics simulation." },
+      { type: 'header', text: "The Render Loop Problem" },
+      { type: 'paragraph', text: "When you're receiving 1000 updates per second, causing a re-render on every state change is a death sentence for your frame rate. The main thread chokes, scroll becomes jagged, and users leave." },
+      { type: 'code', lang: 'tsx', code: `// The naive approach (Do not do this)\nuseEffect(() => {\n  socket.on('price', (p) => setPrice(p)); // Triggers render\n}, []);\n\n// The performant approach\nuseFrame(() => {\n  // Direct mutation of the ref\n  meshRef.current.position.y = mutableState.price;\n});` },
+      { type: 'paragraph', text: "The solution? Bypass the virtual DOM for the heavy lifting. We can use a ref to hold mutable state and an animation loop to update a Canvas element directly." }
+    ]
+  },
+  {
+    id: "rust-sim",
+    title: "From Python to Rust: A Simulation Engine Story",
+    excerpt: "Rewriting my Monte Carlo solver. Dealing with the borrow checker, but gaining 40x performance in the process.",
+    date: "2024.12.05",
+    readTime: "15 min",
+    tag: "Systems",
+    content: [
+      { type: 'paragraph', text: "I love Python. It's the lingua franca of data science. But when I tried to scale my poker solver to millions of iterations, the GIL (Global Interpreter Lock) became my enemy." },
+      { type: 'paragraph', text: "Rust promised memory safety without garbage collection and C++ level speeds. It sounded too good to be true. The learning curve was vertical—fighting the borrow checker felt like arguing with a strict bureaucrat." },
+      { type: 'header', text: "Zero Cost Abstractions" },
+      { type: 'paragraph', text: "But once it clicked, the results were staggering. My Monte Carlo simulation went from 45 minutes in Python to just over 60 seconds in Rust. This speed difference isn't just about waiting less; it changes how you can iterate on your research." }
+    ]
   }
 ];
 
@@ -107,9 +174,111 @@ const DustParticles = () => {
   );
 };
 
-// --- SUB-COMPONENTS (Defined outside to prevent re-render glitches) ---
+// 2. Neural Network - Connected nodes for Writing section
+const NeuralNetworkEffect = () => {
+  const count = 50; // Number of nodes
+  const radius = 8; // Spread radius
+  
+  // Create initial positions
+  const [positions, velocities] = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const vel = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * radius * 2;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * radius * 1.5;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 5; // flatter z
+      vel[i * 3] = (Math.random() - 0.5) * 0.005;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.005;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.005;
+    }
+    return [pos, vel];
+  }, []);
 
-const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' | 'work') => void }) => {
+  const linesGeometryRef = useRef<THREE.BufferGeometry>(null);
+  const pointsRef = useRef<THREE.Points>(null);
+
+  // Buffer for lines (max possible connections)
+  const maxConnections = count * count;
+  const linePositions = useMemo(() => new Float32Array(maxConnections * 6), []);
+  
+  useFrame((state) => {
+    let vertexIndex = 0;
+    const connectionDistance = 2.5;
+
+    // Update particles
+    for (let i = 0; i < count; i++) {
+      // Move
+      positions[i * 3] += velocities[i * 3];
+      positions[i * 3 + 1] += velocities[i * 3 + 1];
+      positions[i * 3 + 2] += velocities[i * 3 + 2];
+
+      // Boundary Check (bounce)
+      if (Math.abs(positions[i * 3]) > radius) velocities[i * 3] *= -1;
+      if (Math.abs(positions[i * 3 + 1]) > radius) velocities[i * 3 + 1] *= -1;
+      if (Math.abs(positions[i * 3 + 2]) > 2) velocities[i * 3 + 2] *= -1;
+
+      // Check connections
+      for (let j = i + 1; j < count; j++) {
+        const dx = positions[i * 3] - positions[j * 3];
+        const dy = positions[i * 3 + 1] - positions[j * 3 + 1];
+        const dz = positions[i * 3 + 2] - positions[j * 3 + 2];
+        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+        if (dist < connectionDistance) {
+            // Add line segment
+            linePositions[vertexIndex++] = positions[i * 3];
+            linePositions[vertexIndex++] = positions[i * 3 + 1];
+            linePositions[vertexIndex++] = positions[i * 3 + 2];
+            linePositions[vertexIndex++] = positions[j * 3];
+            linePositions[vertexIndex++] = positions[j * 3 + 1];
+            linePositions[vertexIndex++] = positions[j * 3 + 2];
+        }
+      }
+    }
+
+    // Update Points
+    if (pointsRef.current) {
+        pointsRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Update Lines
+    if (linesGeometryRef.current) {
+        linesGeometryRef.current.setDrawRange(0, vertexIndex / 3);
+        linesGeometryRef.current.attributes.position.needsUpdate = true;
+    }
+  });
+
+  return (
+    <group>
+        <points ref={pointsRef}>
+            <bufferGeometry>
+                <bufferAttribute
+                    attach="attributes-position"
+                    count={count}
+                    array={positions}
+                    itemSize={3}
+                />
+            </bufferGeometry>
+            <pointsMaterial size={0.08} color="white" transparent opacity={0.8} sizeAttenuation={true} />
+        </points>
+        <lineSegments>
+            <bufferGeometry ref={linesGeometryRef}>
+                <bufferAttribute
+                    attach="attributes-position"
+                    count={maxConnections * 2} // 2 vertices per line
+                    array={linePositions}
+                    itemSize={3}
+                />
+            </bufferGeometry>
+            <lineBasicMaterial color="white" transparent opacity={0.15} linewidth={1} />
+        </lineSegments>
+    </group>
+  );
+};
+
+// --- SUB-COMPONENTS ---
+
+const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: Page) => void }) => {
   // Parallax opacities
   const appear1 = Math.min(1, Math.max(0, (scrollY - window.innerHeight * 0.4) / 400));
   const appear2 = Math.min(1, Math.max(0, (scrollY - window.innerHeight * 1.0) / 400));
@@ -126,7 +295,7 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' |
             className="absolute bg-black opacity-60 blur-3xl"
             style={{
               top: '-50%',
-              left: '-52%', // Shifted left to cast shadow on the dark side (underneath the paper)
+              left: '-52%', // Shifted left to cast shadow on the dark side
               width: '200%',
               height: '200%',
               transform: `rotate(-15deg) translateX(${35 + (scrollY * 0.08)}%)`,
@@ -141,42 +310,36 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' |
               left: '-50%',
               width: '200%',
               height: '200%',
-              // Initial rotation to create diagonal
-              // Translate X moves the beam across the screen based on scroll
               transform: `rotate(-15deg) translateX(${35 + (scrollY * 0.08)}%)`,
               willChange: 'transform',
               backgroundColor: '#f5f0e1', // Worn yellowed paper
-              boxShadow: '0 0 100px rgba(0,0,0,0.3)' // Dark drop shadow for lift
+              boxShadow: '0 0 100px rgba(0,0,0,0.3)' 
             }}
           >
-            {/* Clean Construction Lines (No Noise) */}
-            <div className="absolute top-0 bottom-0 left-[0px] w-[1px] bg-black/10" /> {/* Sharp edge */}
-            <div className="absolute top-0 bottom-0 left-[12px] w-[1px] bg-black/5" />  {/* Secondary line */}
+            {/* Clean Construction Lines */}
+            <div className="absolute top-0 bottom-0 left-[0px] w-[1px] bg-black/10" /> 
+            <div className="absolute top-0 bottom-0 left-[12px] w-[1px] bg-black/5" />
             
-            {/* Subtle Edge Gradient for Volume - Very faint to keep it bright */}
+            {/* Subtle Edge Gradient */}
             <div className="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-black/5 to-transparent pointer-events-none" />
           </div>
 
-          {/* Right Side Architectural Lines (Fixed Overlay) - Rendered ON TOP of Light Shaft */}
-          {/* Added mix-blend-difference so lines are white on black, and black on white */}
+          {/* Right Side Architectural Lines */}
           <div className="absolute right-[10%] top-0 bottom-0 w-[1px] bg-white mix-blend-difference z-10 hidden md:block opacity-30">
-            {/* Tick marks */}
             <div className="absolute top-[20%] right-0 w-3 h-[1px] bg-white"></div>
             <div className="absolute top-[20.5%] right-0 w-1.5 h-[1px] bg-white"></div>
             <div className="absolute top-[21%] right-0 w-1.5 h-[1px] bg-white"></div>
             <div className="absolute top-[80%] right-0 w-3 h-[1px] bg-white"></div>
-            {/* Floating Label */}
             <div className="absolute top-[20%] right-6 text-[10px] text-white font-mono tracking-widest origin-top-right rotate-90">
                 COORD.SYS.01
             </div>
           </div>
           <div className="absolute right-[5%] top-0 bottom-0 w-[1px] bg-white mix-blend-difference z-10 hidden md:block opacity-10"></div>
-          
       </div>
 
-      {/* HERO TEXT - Uses mix-blend-mode: difference to invert against the light shaft */}
-      <section className="h-screen flex flex-col justify-center px-6 md:px-24 relative z-10 mix-blend-difference text-white">
-        <div className="max-w-5xl w-full pt-20">
+      {/* HERO TEXT */}
+      <section className="h-screen flex flex-col justify-center px-6 md:px-24 relative z-10 mix-blend-difference text-white pointer-events-none">
+        <div className="max-w-5xl w-full pt-20 pointer-events-auto">
           <h1 className="text-[14vw] md:text-[9rem] font-bold tracking-tighter leading-[0.8] mb-8">
             Andrew<br/>Wang
           </h1>
@@ -188,17 +351,18 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' |
           
           <div className="mt-16 flex flex-wrap gap-8">
             <button
-              onClick={() => {
+              onClick={(e) => {
+                  e.stopPropagation();
                   setPage('work');
                   window.scrollTo(0, 0);
               }}
-              className="px-8 py-4 bg-white text-black font-bold tracking-[0.2em] text-sm uppercase hover:bg-neutral-200 transition-colors"
+              className="px-8 py-4 bg-white text-black font-bold tracking-[0.2em] text-sm uppercase hover:bg-neutral-200 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer relative z-[60] pointer-events-auto shadow-lg hover:shadow-white/20"
             >
               View work
             </button>
             <a
               href="mailto:anzwan@unc.edu"
-              className="px-8 py-4 border border-white text-white font-bold tracking-[0.2em] text-sm uppercase hover:bg-white hover:text-black transition-all"
+              className="px-8 py-4 border border-white text-white font-bold tracking-[0.2em] text-sm uppercase hover:bg-white hover:text-black hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer relative z-[60] pointer-events-auto"
             >
               Contact
             </a>
@@ -206,7 +370,7 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' |
         </div>
       </section>
 
-      {/* Section 1 - Text reveal */}
+      {/* Section 1 */}
       <section 
         className="min-h-screen flex items-center justify-end px-6 md:px-24 relative z-10"
         style={{ opacity: appear1 }}
@@ -227,7 +391,7 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' |
         </div>
       </section>
 
-      {/* Section 2 - Stats */}
+      {/* Section 2 */}
       <section 
         className="min-h-screen flex items-center justify-center px-6 relative z-10 mix-blend-difference"
         style={{ opacity: appear2 }}
@@ -253,12 +417,12 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' |
         </div>
       </section>
 
-      {/* Section 3 - Call to Action */}
+      {/* Section 3 */}
       <section 
-        className="min-h-[80vh] flex items-center px-6 md:px-24 z-10 relative mix-blend-difference"
+        className="min-h-[80vh] flex items-center px-6 md:px-24 z-10 relative mix-blend-difference pointer-events-none"
         style={{ opacity: appear3 }}
       >
-        <div className="max-w-3xl">
+        <div className="max-w-3xl pointer-events-auto">
           <h2 className="text-4xl md:text-6xl font-bold mb-8 text-white">
             Research to production
           </h2>
@@ -271,7 +435,7 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: 'home' |
                 setPage('work');
                 window.scrollTo(0, 0);
             }}
-            className="text-xl text-white hover:text-white/70 transition-all inline-flex items-center gap-4 group uppercase tracking-widest font-bold"
+            className="text-xl text-white hover:text-white/70 transition-all inline-flex items-center gap-4 group uppercase tracking-widest font-bold cursor-pointer relative z-[60]"
           >
             See the work
             <span className="group-hover:translate-x-4 transition-transform duration-300">→</span>
@@ -286,7 +450,7 @@ const WorkPage = () => {
   return (
     <div className="min-h-screen pt-40 pb-20 px-4 md:px-12 animate-fade-in relative z-20 bg-[#0a0a0a]">
       
-      {/* Work Page Background Grid */}
+      {/* Background Grid */}
       <div className="fixed inset-0 pointer-events-none opacity-10">
           <div className="absolute right-[25%] top-0 bottom-0 w-[1px] bg-white/20 hidden md:block"></div>
           <div className="absolute left-[15%] top-0 bottom-0 w-[1px] bg-white/20 hidden md:block"></div>
@@ -317,7 +481,7 @@ const WorkPage = () => {
                 key={i}
                 className="group cursor-pointer relative border-t border-white/20 py-12 hover:border-white transition-colors duration-500"
               >
-                {/* Hover Light Effect specific to item */}
+                {/* Hover Light Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
                 
                 <div className="flex flex-col md:flex-row gap-8 md:gap-0">
@@ -341,7 +505,7 @@ const WorkPage = () => {
                       </p>
                     </div>
 
-                    {/* Tech Specs / Visual Balance */}
+                    {/* Tech Specs */}
                     <div className="md:w-[25%] flex flex-col justify-between items-start md:items-end border-l md:border-l-0 border-white/10 pl-6 md:pl-0">
                         <div className="text-right mb-4">
                             <div className="text-xs text-white/30 uppercase tracking-widest mb-1">Type</div>
@@ -356,7 +520,7 @@ const WorkPage = () => {
                             ))}
                         </div>
 
-                        {/* Abstract Visual Element for Density */}
+                        {/* Abstract Visual Element */}
                         <div className="mt-6 w-full h-1 bg-white/10 relative overflow-hidden hidden md:block group-hover:bg-white/20 transition-colors">
                             <div className="absolute top-0 left-0 h-full bg-white w-1/3 transform -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-in-out"></div>
                         </div>
@@ -369,7 +533,7 @@ const WorkPage = () => {
         
           <div className="mt-48 py-20 border-t border-white text-center relative overflow-hidden">
             <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">Visually Loud.<br/>Mathematically Quiet.</h3>
-            <a href="mailto:anzwan@unc.edu" className="inline-block px-12 py-5 bg-white text-black font-bold text-lg hover:bg-neutral-300 transition-colors uppercase tracking-widest">
+            <a href="mailto:anzwan@unc.edu" className="inline-block px-12 py-5 bg-white text-black font-bold text-lg hover:bg-neutral-300 transition-colors uppercase tracking-widest hover:scale-105 active:scale-95 duration-300">
               Contact Me
             </a>
           </div>
@@ -378,48 +542,242 @@ const WorkPage = () => {
   );
 };
 
+const BlogPage = () => {
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+
+  const selectedPost = posts.find(p => p.id === selectedPostId);
+
+  return (
+    <div className="min-h-screen pt-40 pb-20 px-4 md:px-12 animate-fade-in relative z-20 bg-[#0a0a0a]">
+        
+        {/* Paper texture column on the right for visual interest (Fan Ho style split) */}
+        <div className="fixed right-0 top-0 bottom-0 w-[15vw] bg-[#f5f0e1] opacity-5 pointer-events-none hidden md:block"></div>
+        <div className="fixed right-[15vw] top-0 bottom-0 w-[1px] bg-white/10 hidden md:block"></div>
+
+        <div className="max-w-[1200px] mx-auto relative z-10">
+            
+            {selectedPost ? (
+                // ARTICLE VIEW
+                <div className="animate-fade-in">
+                    <button 
+                        onClick={() => setSelectedPostId(null)}
+                        className="group flex items-center gap-2 text-white/50 hover:text-white mb-12 uppercase tracking-widest text-xs font-bold transition-all cursor-pointer hover:translate-x-[-4px]"
+                    >
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        Back to Index
+                    </button>
+                    
+                    <div className="max-w-4xl mx-auto">
+                        <div className="flex gap-4 mb-6 text-sm font-mono text-nobel-gold border-b border-white/10 pb-6">
+                             <span className="text-white/50">{selectedPost.date}</span>
+                             <span className="text-white/30">/</span>
+                             <span className="text-white">{selectedPost.tag}</span>
+                             <span className="text-white/30 ml-auto">{selectedPost.readTime}</span>
+                        </div>
+                        
+                        <h1 className="text-4xl md:text-6xl font-bold text-white mb-16 leading-tight tracking-tight">
+                            {selectedPost.title}
+                        </h1>
+
+                        <div className="space-y-12">
+                            {selectedPost.content.map((block, idx) => {
+                                switch(block.type) {
+                                    case 'paragraph':
+                                        return (
+                                            <p key={idx} className="text-lg md:text-xl text-white/70 font-serif leading-relaxed">
+                                                {block.text}
+                                            </p>
+                                        );
+                                    case 'header':
+                                        return (
+                                            <h3 key={idx} className="text-2xl md:text-3xl font-bold text-white mt-16 mb-6 tracking-tight">
+                                                {block.text}
+                                            </h3>
+                                        );
+                                    case 'code':
+                                        return (
+                                            <div key={idx} className="my-8 rounded-lg overflow-hidden bg-[#111] border border-white/10">
+                                                <div className="bg-white/5 px-4 py-2 flex items-center justify-between border-b border-white/5">
+                                                    <span className="text-xs font-mono text-white/40 uppercase">{block.lang}</span>
+                                                    <Terminal size={14} className="text-white/20" />
+                                                </div>
+                                                <pre className="p-6 overflow-x-auto">
+                                                    <code className="font-mono text-sm text-white/80 leading-relaxed">
+                                                        {block.code}
+                                                    </code>
+                                                </pre>
+                                            </div>
+                                        );
+                                    case 'image':
+                                        return (
+                                            <figure key={idx} className="my-12">
+                                                <div className="w-full h-80 bg-[#1a1a1a] rounded-sm border border-white/10 flex items-center justify-center flex-col gap-4 group hover:border-white/20 transition-colors">
+                                                    <ImageIcon size={32} className="text-white/20" />
+                                                    <div className="text-white/20 font-mono text-xs">Image Placeholder</div>
+                                                </div>
+                                                <figcaption className="mt-4 text-center text-sm font-mono text-white/40 italic">
+                                                    {block.caption}
+                                                </figcaption>
+                                            </figure>
+                                        );
+                                    default:
+                                        return null;
+                                }
+                            })}
+                        </div>
+
+                        <div className="mt-24 pt-12 border-t border-white/10 flex justify-between items-center">
+                            <p className="text-white/30 text-sm font-mono italic">
+                                End of transmission.
+                            </p>
+                            <button 
+                                onClick={() => setSelectedPostId(null)}
+                                className="text-white text-sm font-bold uppercase tracking-widest hover:underline"
+                            >
+                                Read Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                // LIST VIEW
+                <>
+                    <div className="mb-24">
+                        <h1 className="text-7xl md:text-[9rem] font-bold mb-8 tracking-tighter text-white leading-[0.8]">
+                            Field<br/><span className="text-white/30">Notes</span>
+                        </h1>
+                        <p className="text-xl text-white/60 max-w-lg font-mono text-sm uppercase tracking-widest mt-8 border-t border-white/20 pt-4">
+                            Thoughts on simulation, systems programming, and model interpretability.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-16">
+                        {posts.map((post, i) => (
+                            <article key={i} className="group relative border-t border-white/10 pt-12 transition-all duration-500 hover:border-white/60">
+                                
+                                {/* Added Hover Indicator */}
+                                <div className="absolute left-0 top-12 h-[calc(100%-3rem)] w-1 bg-white transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top"></div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 group-hover:translate-x-6 transition-transform duration-500 ease-out pl-4 md:pl-0">
+                                    
+                                    {/* Meta */}
+                                    <div className="md:col-span-3 flex flex-col gap-2">
+                                        <time className="text-sm font-mono text-white/50">{post.date}</time>
+                                        <span className="text-xs font-bold text-white uppercase tracking-widest">{post.tag}</span>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="md:col-span-6">
+                                        <h2 
+                                            onClick={() => setSelectedPostId(post.id)}
+                                            className="text-3xl md:text-4xl font-bold text-white mb-4 group-hover:text-white/90 group-hover:underline decoration-1 underline-offset-8 transition-all cursor-pointer"
+                                        >
+                                            {post.title}
+                                        </h2>
+                                        <p className="text-lg text-white/60 font-light leading-relaxed">
+                                            {post.excerpt}
+                                        </p>
+                                        <button 
+                                            onClick={() => setSelectedPostId(post.id)}
+                                            className="mt-6 text-sm uppercase tracking-widest text-white/40 group-hover:text-white flex items-center gap-2 transition-colors cursor-pointer group/btn"
+                                        >
+                                            Read Article <ArrowUpRight size={14} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                                        </button>
+                                    </div>
+
+                                    {/* Status */}
+                                    <div className="md:col-span-3 text-right hidden md:block">
+                                        <span className="text-xs font-mono text-white/30 border border-white/20 px-2 py-1 rounded-full">
+                                            {post.readTime}
+                                        </span>
+                                    </div>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                    
+                    <div className="mt-32 text-center border-t border-white/10 pt-12">
+                        <p className="text-white/30 text-sm font-mono">End of Feed</p>
+                    </div>
+                </>
+            )}
+        </div>
+    </div>
+  );
+};
+
 // --- MAIN APPLICATION ---
 
 export default function FluidPortfolio() {
   const [scrollY, setScrollY] = useState(0);
-  const [currentPage, setCurrentPage] = useState<'home' | 'work'>('home');
+  const [currentPage, setCurrentPage] = useState<Page>('home');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-        // Only update scrollY if on home page to avoid unnecessary re-renders when deep in work page
-        if (currentPage === 'home') {
-            setScrollY(window.scrollY);
-        }
+        setScrollY(window.scrollY);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [currentPage]);
+  }, []);
 
   return (
     <div className="bg-[#0a0a0a] text-white min-h-screen relative selection:bg-white selection:text-black font-sans overflow-x-hidden">
       
-      {/* Three.js Atmosphere (Dust) */}
-      <div className="fixed inset-0 pointer-events-none z-30 mix-blend-screen">
-        <Canvas camera={{ position: [0, 0, 5], fov: 60 }} dpr={[1, 2]} gl={{ antialias: false, powerPreference: "high-performance" }}>
-            <DustParticles />
+      {/* Three.js Atmosphere (Dust/Network) - z-30 but pointer-events-none ensures clicks pass through */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-30 mix-blend-screen" 
+        style={{ 
+            pointerEvents: 'none',
+            opacity: currentPage === 'writing' ? Math.max(0, 1 - scrollY / 600) : 1,
+            maskImage: currentPage === 'writing' ? 'linear-gradient(to bottom, black 0%, black 40%, transparent 90%)' : 'none',
+            WebkitMaskImage: currentPage === 'writing' ? 'linear-gradient(to bottom, black 0%, black 40%, transparent 90%)' : 'none'
+        }}
+      >
+        <Canvas camera={{ position: [0, 0, 5], fov: 60 }} style={{ pointerEvents: 'none' }}>
+            {currentPage === 'writing' ? <NeuralNetworkEffect /> : <DustParticles />}
         </Canvas>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-[#0a0a0a] flex flex-col justify-center items-center gap-12 animate-fade-in pointer-events-auto">
+            {(['home', 'work', 'writing'] as const).map((page) => (
+                <button
+                    key={page}
+                    onClick={() => {
+                        setCurrentPage(page);
+                        setIsMenuOpen(false);
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    }}
+                    className={`text-4xl font-bold tracking-[0.2em] uppercase text-white hover:scale-110 transition-transform ${currentPage === page ? 'opacity-100' : 'opacity-50'}`}
+                >
+                    {page}
+                </button>
+            ))}
+        </div>
+      )}
       
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-50 mix-blend-difference text-white">
+      {/* Nav - z-50 to stay on top */}
+      <nav className="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-50 mix-blend-difference text-white pointer-events-none">
         <div 
-            className="text-2xl font-bold tracking-tighter cursor-pointer border-2 border-white px-2 py-1" 
-            onClick={() => setCurrentPage('home')}
+            className="text-2xl font-bold tracking-tighter cursor-pointer border-2 border-white px-2 py-1 pointer-events-auto hover:scale-105 transition-transform duration-200" 
+            onClick={() => {
+                setCurrentPage('home');
+                setIsMenuOpen(false);
+            }}
         >
             AW.
         </div>
-        <div className="flex gap-12 text-xs font-bold tracking-[0.2em]">
+        
+        {/* Desktop Menu */}
+        <div className="hidden md:flex gap-8 md:gap-12 text-xs font-bold tracking-[0.2em] pointer-events-auto">
             <button
             onClick={() => {
                 setCurrentPage('home');
                 window.scrollTo({top: 0, behavior: 'smooth'});
             }}
-            className={`transition-all hover:text-white/80 uppercase relative group ${currentPage === 'home' ? 'opacity-100' : 'opacity-50'}`}
+            className={`transition-all hover:text-white hover:scale-105 uppercase relative group ${currentPage === 'home' ? 'opacity-100' : 'opacity-50'}`}
             >
             Home
             <span className={`absolute -bottom-2 left-0 w-full h-[1px] bg-white transform origin-left transition-transform duration-300 ${currentPage === 'home' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
@@ -429,16 +787,39 @@ export default function FluidPortfolio() {
                 setCurrentPage('work');
                 window.scrollTo({top: 0, behavior: 'smooth'});
             }}
-            className={`transition-all hover:text-white/80 uppercase relative group ${currentPage === 'work' ? 'opacity-100' : 'opacity-50'}`}
+            className={`transition-all hover:text-white hover:scale-105 uppercase relative group ${currentPage === 'work' ? 'opacity-100' : 'opacity-50'}`}
             >
             Work
             <span className={`absolute -bottom-2 left-0 w-full h-[1px] bg-white transform origin-left transition-transform duration-300 ${currentPage === 'work' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
             </button>
+            <button
+            onClick={() => {
+                setCurrentPage('writing');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }}
+            className={`transition-all hover:text-white hover:scale-105 uppercase relative group ${currentPage === 'writing' ? 'opacity-100' : 'opacity-50'}`}
+            >
+            Writing
+            <span className={`absolute -bottom-2 left-0 w-full h-[1px] bg-white transform origin-left transition-transform duration-300 ${currentPage === 'writing' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+            </button>
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <div className="md:hidden pointer-events-auto">
+            <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                className="text-white hover:scale-110 transition-transform p-2"
+            >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
         </div>
       </nav>
 
+      {/* Main Content - z-10 default, but buttons inside will elevate themselves */}
       <div className="relative z-10">
-        {currentPage === 'home' ? <HomePage scrollY={scrollY} setPage={setCurrentPage} /> : <WorkPage />}
+        {currentPage === 'home' && <HomePage scrollY={scrollY} setPage={setCurrentPage} />}
+        {currentPage === 'work' && <WorkPage />}
+        {currentPage === 'writing' && <BlogPage />}
       </div>
     </div>
   );
