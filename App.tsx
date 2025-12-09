@@ -95,7 +95,7 @@ const projects: Project[] = [
     tags: ["WebGL", "Physics", "React", "GLSL"],
     type: "Simulation",
     role: "Full Stack Engineer",
-    image: `${import.meta.env.BASE_URL}images/Test.png`,
+    image: "images/Test.png",
     stats: [
         { label: "Paths", value: "100k+" },
         { label: "FPS", value: "60" },
@@ -709,11 +709,21 @@ const WorkPage = ({
                             </p>
                         </div>
 
-                        {/* Visual Placeholder */}
-                        <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
-                             <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
-                             <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
-                        </div>
+                        {/* Visual Component */}
+                        {selectedProject.image ? (
+                            <div className="w-full h-auto bg-black border border-white/10 rounded-lg overflow-hidden">
+                                <img 
+                                    src={selectedProject.image} 
+                                    alt={selectedProject.title} 
+                                    className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
+                                />
+                            </div>
+                        ) : (
+                            <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
+                                <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                                <span className="font-mono text-white/30 text-sm">Image not Found</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sidebar Stats */}
@@ -824,7 +834,7 @@ const WorkPage = ({
                 </div>
                 
                 <div className="mt-48 py-20 border-t border-white text-center relative overflow-hidden">
-                    <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">Visually Loud.<br/>Mathematically Quiet.</h3>
+                    <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">More to come soon.</h3>
                     <a href="mailto:anzwan@unc.edu" className="inline-block px-12 py-5 bg-white text-black font-bold text-lg hover:bg-neutral-300 transition-colors uppercase tracking-widest hover:scale-105 active:scale-95 duration-300">
                     Contact Me
                     </a>
