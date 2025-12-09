@@ -63,6 +63,7 @@ interface Project {
     type: string;
     stats: { label: string; value: string }[];
     role: string;
+    image?: string;
 }
 
 // --- DATA ---
@@ -94,7 +95,7 @@ const projects: Project[] = [
     tags: ["WebGL", "Physics", "React", "GLSL"],
     type: "Simulation",
     role: "Full Stack Engineer",
-    image: "/Portfolio-Website/images/Test.png",
+    image: `${import.meta.env.BASE_URL}images/Test.png`,
     stats: [
         { label: "Paths", value: "100k+" },
         { label: "FPS", value: "60" },
