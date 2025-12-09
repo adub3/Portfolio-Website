@@ -668,102 +668,6 @@ const WorkPage = ({
       </div>
       
       <div className="max-w-[1600px] mx-auto">
-<<<<<<< HEAD
-          
-        <div className="mb-32 relative pl-4 md:pl-0">
-            <h1 className="text-7xl md:text-[10rem] font-bold mb-8 tracking-tighter text-white z-10 relative leading-[0.8]">
-              Projects<br/>
-            </h1>
-            <p className="text-xl md:text-2xl text-white/60 max-w-xl font-light italic font-serif mt-12 border-l border-white/30 pl-6">
-              A collection of my personal projects which include some in optimization, stochastic dynamics, RL, and machine learning architectures.
-            </p>
-        </div>
-=======
-        
-        {selectedProject ? (
-            // === PROJECT DETAIL VIEW ===
-            <div className="animate-fade-in relative z-50">
-                <button 
-                    onClick={() => setSelectedProjectId(null)}
-                    className="group flex items-center gap-2 text-white/50 hover:text-white mb-12 uppercase tracking-widest text-xs font-bold transition-all cursor-pointer hover:translate-x-[-4px]"
-                >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Index
-                </button>
->>>>>>> main
-
-                {/* Header */}
-                <div className="border-b border-white/20 pb-12 mb-12">
-                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-                         <div>
-                            <span className="text-nobel-gold font-mono uppercase tracking-widest text-sm mb-4 block">{selectedProject.type} /// {selectedProject.year}</span>
-                            <h1 className="text-5xl md:text-8xl font-bold text-white tracking-tighter leading-none">{selectedProject.title}</h1>
-                         </div>
-                         <div className="flex flex-wrap gap-2 md:justify-end">
-                             {selectedProject.tags.map(tag => (
-                                 <span key={tag} className="border border-white/20 px-3 py-1 text-white/60 text-xs uppercase tracking-wider rounded-full">{tag}</span>
-                             ))}
-                         </div>
-                     </div>
-                     <p className="text-2xl text-white/80 max-w-3xl font-light leading-relaxed">
-                         {selectedProject.description}
-                     </p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-12">
-                        <div>
-                            <h3 className="text-white text-lg font-bold uppercase tracking-widest mb-6 border-l-2 border-white pl-4">About the Project</h3>
-                            <p className="text-lg text-white/70 leading-relaxed font-serif whitespace-pre-wrap">
-                                {selectedProject.longDescription}
-                            </p>
-                        </div>
-
-                        {/* Visual Placeholder */}
-                        <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
-                             <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
-                             <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
-                        </div>
-                    </div>
-
-                    {/* Sidebar Stats */}
-                    <div className="space-y-12">
-                        <div className="bg-white/5 p-8 border border-white/10 backdrop-blur-sm">
-                            <h4 className="text-white/50 text-xs font-mono uppercase tracking-widest mb-8">Key Metrics</h4>
-                            <div className="space-y-8">
-                                {selectedProject.stats.map((stat, i) => (
-                                    <div key={i}>
-                                        <div className="text-4xl font-bold text-white mb-1">{stat.value}</div>
-                                        <div className="text-sm text-white/40 font-mono">{stat.label}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 className="text-white/50 text-xs font-mono uppercase tracking-widest mb-4">Role</h4>
-                            <p className="text-white text-lg">{selectedProject.role}</p>
-                        </div>
-
-                        <button className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors flex items-center justify-center gap-3 group">
-                            Launch Case Study <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        </button>
-                    </div>
-                </div>
-<<<<<<< HEAD
-              </div>
-            );
-          })}
-        </div>
-        
-          <div className="mt-48 py-20 border-t border-white text-center relative overflow-hidden">
-            <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">More to come soon!</h3>
-            <a href="mailto:anzwan@unc.edu" className="inline-block px-12 py-5 bg-white text-black font-bold text-lg hover:bg-neutral-300 transition-colors uppercase tracking-widest hover:scale-105 active:scale-95 duration-300">
-              Contact Me
-            </a>
-          </div>
-=======
             </div>
         ) : (
             // === PROJECT LIST VIEW ===
@@ -855,7 +759,6 @@ const WorkPage = ({
                 </div>
             </div>
         )}
->>>>>>> main
       </div>
     </div>
   );
