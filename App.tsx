@@ -103,7 +103,8 @@ const posts: Post[] = [
       { type: 'header', text: "The Data Structure" },
       { type: 'paragraph', text: "All the content you see here, including this very post, is stored in a very simple JSON-like structure within the application code. This makes it easy to update and maintain without a super complex backend." },
       { type: 'code', lang: 'typescript', code: `const posts: Post[] = [\n  {\n    id: "portfolio-walkthrough",\n    title: "Inside This Portfolio",\n    // ... content ...\n  }\n];` },
-      { type: 'paragraph', text: "Navigating between sections triggers smooth state transitions, with the 3D scene adapting to the context—calm particles for the home screen, and connected nodes for the writing section." }
+      { type: 'paragraph', text: "Navigating between sections triggers smooth state transitions, with the 3D scene adapting to the different contexts between  the home screen, and connected nodes for the writing section." },
+      { type: 'paragraph', text: "Hopefully there is more to come very shortly!." } 
     ]
   }
 ];
@@ -785,7 +786,7 @@ const BlogPage = () => {
 
                         <div className="mt-24 pt-12 border-t border-white/10 flex justify-between items-center">
                             <p className="text-white/30 text-sm font-mono italic">
-                                End of transmission.
+                                All work done above is original, and as such should not be produced without permission.
                             </p>
                             <button 
                                 onClick={() => setSelectedPostId(null)}
