@@ -63,7 +63,6 @@ interface Project {
     type: string;
     stats: { label: string; value: string }[];
     role: string;
-    image?: string;
 }
 
 // --- DATA ---
@@ -73,7 +72,7 @@ const projects: Project[] = [
     id: "gas",
     title: "Gas Price Forecasting",
     description: "ARIMA-GARCH model for prediction markets. Competition Finalist. ROC AUC 0.998, 23% calibration improvement.",
-    longDescription: "Developed a hybrid ARIMA-GARCH statistical model to forecast European natural gas prices for a quantitative trading competition. The model captures both the mean reversion of price levels and the volatility clustering inherent in energy markets. It achieved a ROC AUC of 0.998 on out-of-sample data, significantly outperforming standard time-series baselines.",
+    longDescription: "Developed a hybrid ARIMA-GARCH statistical model to forecast Gasoline prices (Based on AAA national averages) for a forcasting competition hosted by Kalshi. The model captures both the mean reversion of price levels and the volatility clustering inherent in energy markets. It achieved a ROC AUC of 0.998 on out-of-sample data, significantly outperforming standard time-series baselines.",
     year: "2025",
     month: "OCT",
     tags: ["Python", "TimeSeries", "ML", "Pandas"],
@@ -95,7 +94,7 @@ const projects: Project[] = [
     tags: ["WebGL", "Physics", "React", "GLSL"],
     type: "Simulation",
     role: "Full Stack Engineer",
-    image: "./images/Test.png",
+    image: "/Portfolio-Website/images/Test.png",
     stats: [
         { label: "Paths", value: "100k+" },
         { label: "FPS", value: "60" },
@@ -709,21 +708,11 @@ const WorkPage = ({
                             </p>
                         </div>
 
-                        {/* Visual Component */}
-                        {selectedProject.image ? (
-                            <div className="w-full h-auto bg-black border border-white/10 rounded-lg overflow-hidden">
-                                <img 
-                                    src={selectedProject.image} 
-                                    alt={selectedProject.title} 
-                                    className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
-                                />
-                            </div>
-                        ) : (
-                            <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
-                                <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
-                                <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
-                            </div>
-                        )}
+                        {/* Visual Placeholder */}
+                        <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
+                             <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                             <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
+                        </div>
                     </div>
 
                     {/* Sidebar Stats */}
