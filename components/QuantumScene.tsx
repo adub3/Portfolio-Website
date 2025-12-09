@@ -8,6 +8,19 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, MeshDistortMaterial, Sphere, Torus, Cylinder, Stars, Environment, Box } from '@react-three/drei';
 import * as THREE from 'three';
 
+// Fix for missing R3F Intrinsic Elements in TypeScript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      meshStandardMaterial: any;
+      ambientLight: any;
+      pointLight: any;
+      spotLight: any;
+      group: any;
+    }
+  }
+}
+
 const QuantumParticle = ({ position, color, scale = 1 }: { position: [number, number, number]; color: string; scale?: number }) => {
   const ref = useRef<THREE.Mesh>(null);
   

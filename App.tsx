@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,6 +8,30 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ArrowUpRight, ArrowLeft, Terminal, ImageIcon, Menu, X } from 'lucide-react';
+
+// Fix for missing R3F Intrinsic Elements in TypeScript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      instancedMesh: any;
+      dodecahedronGeometry: any;
+      meshBasicMaterial: any;
+      group: any;
+      points: any;
+      bufferGeometry: any;
+      bufferAttribute: any;
+      pointsMaterial: any;
+      lineSegments: any;
+      lineBasicMaterial: any;
+      mesh: any;
+      planeGeometry: any;
+      meshStandardMaterial: any;
+      ambientLight: any;
+      pointLight: any;
+      spotLight: any;
+    }
+  }
+}
 
 // --- TYPES ---
 
@@ -118,9 +143,15 @@ const posts: Post[] = [
 
 // 1. Dust Motes (Three.js) - Simulates dust floating in light shafts
 const DustParticles = () => {
-  const count = 400; 
+  const count = 1500; // Increased particle count
   const mesh = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const tempColor = useMemo(() => new THREE.Color(), []);
   
+  // Define colors
+  const colorLight = useMemo(() => new THREE.Color('#f5f0e1'), []);
+  const colorDark = useMemo(() => new THREE.Color('#333333'), []);
+
   // Generate random positions and speeds for dust
   const particles = useMemo(() => {
     const temp = [];
@@ -136,8 +167,6 @@ const DustParticles = () => {
     return temp;
   }, [count]);
 
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
   useFrame((state) => {
     if (!mesh.current) return;
     
@@ -148,12 +177,12 @@ const DustParticles = () => {
       const b = Math.sin(t) + Math.cos(t * 2) / 10;
       const s = Math.cos(t);
       
+      const x = (particle.mx / 10) * a + xFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 1) * factor) / 10;
+      const y = (particle.my / 10) * b + yFactor + Math.sin((t / 10) * factor) + (Math.cos(t * 2) * factor) / 10;
+      const z = (particle.my / 10) * b + zFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 3) * factor) / 10;
+
       // Gentle floating motion
-      dummy.position.set(
-        (particle.mx / 10) * a + xFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 1) * factor) / 10,
-        (particle.my / 10) * b + yFactor + Math.sin((t / 10) * factor) + (Math.cos(t * 2) * factor) / 10,
-        (particle.my / 10) * b + zFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 3) * factor) / 10
-      );
+      dummy.position.set(x, y, z);
       
       // Random scale for depth
       const scale = (s + 2) * 0.04; // Visible dust specks
@@ -162,14 +191,33 @@ const DustParticles = () => {
       dummy.updateMatrix();
       
       mesh.current!.setMatrixAt(i, dummy.matrix);
+
+      // Color Change Logic based on Boundary
+      // The light shaft is rotated approx -15 degrees.
+      // Rotated coordinate system: x' = x * cos(theta) - y * sin(theta)
+      // theta = -15 deg approx -0.26 rad
+      // x' = x * 0.96 + y * 0.26
+      // We check if x' > threshold (shifted to right)
+      
+      const boundaryVal = x * 0.96 + y * 0.26;
+      
+      // Smooth transition zone around x' = -4
+      // Normalize to 0-1 range for lerp
+      // The boundary is roughly at x = -4 in world space for the visual diagonal
+      const alpha = Math.max(0, Math.min(1, (boundaryVal + 5) / 10)); 
+      
+      tempColor.lerpColors(colorDark, colorLight, alpha);
+      mesh.current!.setColorAt(i, tempColor);
     });
+    
     mesh.current.instanceMatrix.needsUpdate = true;
+    if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true;
   });
 
   return (
     <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
       <dodecahedronGeometry args={[0.2, 0]} />
-      <meshBasicMaterial color="#ffffff" transparent opacity={0.4} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={0.6} />
     </instancedMesh>
   );
 };
@@ -187,9 +235,11 @@ const NeuralNetworkEffect = () => {
       pos[i * 3] = (Math.random() - 0.5) * radius * 2;
       pos[i * 3 + 1] = (Math.random() - 0.5) * radius * 1.5;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 5; // flatter z
-      vel[i * 3] = (Math.random() - 0.5) * 0.005;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.005;
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.005;
+      
+      // Slower initial movement
+      vel[i * 3] = (Math.random() - 0.5) * 0.01;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.01;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.01;
     }
     return [pos, vel];
   }, []);
@@ -200,38 +250,137 @@ const NeuralNetworkEffect = () => {
   // Buffer for lines (max possible connections)
   const maxConnections = count * count;
   const linePositions = useMemo(() => new Float32Array(maxConnections * 6), []);
+  const lineColors = useMemo(() => new Float32Array(maxConnections * 6), []);
   
+  // Track when each connection was last broken
+  // Initialize with a negative time so they are fully visible at start
+  const lastBroken = useMemo(() => new Float32Array(count * count).fill(-1000), [count]);
+
   useFrame((state) => {
     let vertexIndex = 0;
-    const connectionDistance = 2.5;
+    const connectionDistance = 3.5;
+    const cutRadius = 0.2; 
+    const cutRadiusSq = cutRadius * cutRadius;
+    const now = state.clock.elapsedTime;
+    
+    // Boundary return strength
+    const boundaryForce = 0.0002;
+
+    const { pointer, viewport } = state;
+    // Map normalized pointer (-1 to 1) to view coordinates at z=0 plane
+    const mx = (pointer.x * viewport.width) / 2;
+    const my = (pointer.y * viewport.height) / 2;
 
     // Update particles
     for (let i = 0; i < count; i++) {
-      // Move
-      positions[i * 3] += velocities[i * 3];
-      positions[i * 3 + 1] += velocities[i * 3 + 1];
-      positions[i * 3 + 2] += velocities[i * 3 + 2];
+      let px = positions[i * 3];
+      let py = positions[i * 3 + 1];
+      let pz = positions[i * 3 + 2];
+      
+      let vx = velocities[i * 3];
+      let vy = velocities[i * 3 + 1];
+      let vz = velocities[i * 3 + 2];
 
-      // Boundary Check (bounce)
-      if (Math.abs(positions[i * 3]) > radius) velocities[i * 3] *= -1;
-      if (Math.abs(positions[i * 3 + 1]) > radius) velocities[i * 3 + 1] *= -1;
-      if (Math.abs(positions[i * 3 + 2]) > 2) velocities[i * 3 + 2] *= -1;
+      // Soft Boundaries (Steer back to center instead of hard bounce)
+      if (px > radius) vx -= boundaryForce;
+      else if (px < -radius) vx += boundaryForce;
+
+      if (py > radius * 0.8) vy -= boundaryForce;
+      else if (py < -radius * 0.8) vy += boundaryForce;
+
+      if (pz > 2) vz -= boundaryForce;
+      else if (pz < -2) vz += boundaryForce;
+
+      // Apply velocity
+      px += vx;
+      py += vy;
+      pz += vz;
+
+      // Save back state
+      positions[i * 3] = px;
+      positions[i * 3 + 1] = py;
+      positions[i * 3 + 2] = pz;
+      velocities[i * 3] = vx;
+      velocities[i * 3 + 1] = vy;
+      velocities[i * 3 + 2] = vz;
 
       // Check connections
       for (let j = i + 1; j < count; j++) {
-        const dx = positions[i * 3] - positions[j * 3];
-        const dy = positions[i * 3 + 1] - positions[j * 3 + 1];
-        const dz = positions[i * 3 + 2] - positions[j * 3 + 2];
-        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const px2 = positions[j * 3];
+        const py2 = positions[j * 3 + 1];
+        const pz2 = positions[j * 3 + 2];
+
+        const ldx = px - px2;
+        const ldy = py - py2;
+        const ldz = pz - pz2;
+        const dist = Math.sqrt(ldx*ldx + ldy*ldy + ldz*ldz);
 
         if (dist < connectionDistance) {
-            // Add line segment
-            linePositions[vertexIndex++] = positions[i * 3];
-            linePositions[vertexIndex++] = positions[i * 3 + 1];
-            linePositions[vertexIndex++] = positions[i * 3 + 2];
-            linePositions[vertexIndex++] = positions[j * 3];
-            linePositions[vertexIndex++] = positions[j * 3 + 1];
-            linePositions[vertexIndex++] = positions[j * 3 + 2];
+            const connectionId = i * count + j;
+
+            // Project mouse position onto the line segment to find closest point
+            const x1 = px, y1 = py;
+            const x2 = px2, y2 = py2;
+            const segLenSq = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1);
+            
+            // t is the projection factor (0 to 1)
+            const t = ((mx - x1) * (x2 - x1) + (my - y1) * (y2 - y1)) / segLenSq;
+            
+            // Clamp t to segment for accurate distance calculation
+            const clampedT = Math.max(0, Math.min(1, t)); 
+            
+            const closestX = x1 + clampedT * (x2 - x1);
+            const closestY = y1 + clampedT * (y2 - y1);
+            
+            const dxm = mx - closestX;
+            const dym = my - closestY;
+            const distToMouseSq = dxm*dxm + dym*dym;
+
+            // If mouse cuts the line, update the broken timestamp
+            // Check t > 0.1 && t < 0.9 to ensure we don't break lines when hovering over the nodes themselves
+            if (distToMouseSq < cutRadiusSq && t > 0.1 && t < 0.9) {
+                lastBroken[connectionId] = now;
+            }
+
+            // Calculate recovery opacity
+            const timeSinceBreak = now - lastBroken[connectionId];
+            let recoveryAlpha = 1.0;
+
+            if (timeSinceBreak < 0.3) {
+                // Kill for 0.3s
+                recoveryAlpha = 0.0;
+            } else if (timeSinceBreak < 0.8) {
+                // Fade in over 0.5s (0.3s -> 0.8s)
+                recoveryAlpha = (timeSinceBreak - 0.3) / 0.5;
+                // Optional: Smooth step
+                recoveryAlpha = recoveryAlpha * recoveryAlpha * (3 - 2 * recoveryAlpha);
+            }
+
+            // Only draw if visible
+            if (recoveryAlpha > 0.01) {
+                // Calculate base opacity based on node distance
+                const alpha = Math.max(0.05, 1.0 - (dist / connectionDistance));
+                const brightness = alpha * alpha * recoveryAlpha; // Combine factors
+
+                // Add line segment
+                linePositions[vertexIndex] = px;
+                linePositions[vertexIndex + 1] = py;
+                linePositions[vertexIndex + 2] = pz;
+                
+                lineColors[vertexIndex] = brightness;
+                lineColors[vertexIndex + 1] = brightness;
+                lineColors[vertexIndex + 2] = brightness;
+
+                linePositions[vertexIndex + 3] = px2;
+                linePositions[vertexIndex + 4] = py2;
+                linePositions[vertexIndex + 5] = pz2;
+
+                lineColors[vertexIndex + 3] = brightness;
+                lineColors[vertexIndex + 4] = brightness;
+                lineColors[vertexIndex + 5] = brightness;
+
+                vertexIndex += 6;
+            }
         }
       }
     }
@@ -245,6 +394,7 @@ const NeuralNetworkEffect = () => {
     if (linesGeometryRef.current) {
         linesGeometryRef.current.setDrawRange(0, vertexIndex / 3);
         linesGeometryRef.current.attributes.position.needsUpdate = true;
+        linesGeometryRef.current.attributes.color.needsUpdate = true;
     }
   });
 
@@ -269,12 +419,64 @@ const NeuralNetworkEffect = () => {
                     array={linePositions}
                     itemSize={3}
                 />
+                <bufferAttribute
+                    attach="attributes-color"
+                    count={maxConnections * 2}
+                    array={lineColors}
+                    itemSize={3}
+                />
             </bufferGeometry>
-            <lineBasicMaterial color="white" transparent opacity={0.15} linewidth={1} />
+            <lineBasicMaterial 
+                vertexColors={true} 
+                transparent 
+                opacity={0.6} 
+                blending={THREE.AdditiveBlending}
+                depthWrite={false}
+            />
         </lineSegments>
     </group>
   );
 };
+
+// 3. Optimization Manifold - Work Section (Wireframe Cost Surface)
+const OptimizationManifold = () => {
+    const meshRef = useRef<THREE.Mesh>(null);
+
+    useFrame((state) => {
+        if (!meshRef.current) return;
+        const time = state.clock.getElapsedTime();
+        
+        // Access the position attribute
+        const position = meshRef.current.geometry.attributes.position;
+        const count = position.count;
+
+        // Animate vertices to create a flowing landscape
+        for (let i = 0; i < count; i++) {
+            // Get original x, y (plane is initialized on x,y, we rotate it later)
+            const x = position.getX(i);
+            const y = position.getY(i);
+            
+            // Calculate Z based on optimization landscape metaphors (peaks and valleys)
+            // Using a combination of sine waves for liquid motion
+            const z = Math.sin(x * 0.3 + time * 0.5) * Math.cos(y * 0.3 + time * 0.3) * 2
+                    + Math.sin(x * 1 + time) * 0.5;
+
+            position.setZ(i, z);
+        }
+        position.needsUpdate = true;
+        
+        // Slow rotation
+        meshRef.current.rotation.z = time * 0.05;
+    });
+
+    return (
+        <mesh ref={meshRef} position={[0, -2, 0]} rotation={[-Math.PI / 2.5, 0, 0]}>
+            <planeGeometry args={[30, 30, 60, 60]} />
+            <meshBasicMaterial color="#555" wireframe={true} transparent opacity={0.3} side={THREE.DoubleSide} />
+        </mesh>
+    );
+};
+
 
 // --- SUB-COMPONENTS ---
 
@@ -290,57 +492,43 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: Page) =>
       {/* HERO BACKGROUND - Pure Geometric Light Shaft */}
       <div className="fixed inset-0 z-0 h-screen w-full overflow-hidden pointer-events-none bg-[#0a0a0a]">
           
-          {/* Deep Shadow Beam - Rendered BEHIND the light shaft */}
+          {/* The "Light Shaft" - No Shadows, Sharp Edges */}
           <div 
-            className="absolute bg-black opacity-60 blur-3xl"
-            style={{
-              top: '-50%',
-              left: '-52%', // Shifted left to cast shadow on the dark side
-              width: '200%',
-              height: '200%',
-              transform: `rotate(-15deg) translateX(${35 + (scrollY * 0.08)}%)`,
-            }}
-          />
-
-          {/* The "Light Shaft" */}
-          <div 
-            className="absolute overflow-hidden shadow-2xl"
+            className="absolute overflow-hidden"
             style={{
               top: '-50%',
               left: '-50%',
               width: '200%',
               height: '200%',
-              transform: `rotate(-15deg) translateX(${35 + (scrollY * 0.08)}%)`,
+              // Rotate and translate based on scroll to "open" the view
+              // Rotates negative to swing the vertical edge towards horizontal (upwards)
+              transform: `rotate(${-15 - (scrollY * 0.05)}deg) translateX(${35 + (scrollY * 0.05)}%)`,
               willChange: 'transform',
               backgroundColor: '#f5f0e1', // Worn yellowed paper
-              boxShadow: '0 0 100px rgba(0,0,0,0.3)' 
             }}
           >
             {/* Clean Construction Lines */}
             <div className="absolute top-0 bottom-0 left-[0px] w-[1px] bg-black/10" /> 
             <div className="absolute top-0 bottom-0 left-[12px] w-[1px] bg-black/5" />
-            
-            {/* Subtle Edge Gradient */}
-            <div className="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-black/5 to-transparent pointer-events-none" />
           </div>
 
           {/* Right Side Architectural Lines */}
-          <div className="absolute right-[10%] top-0 bottom-0 w-[1px] bg-white mix-blend-difference z-10 hidden md:block opacity-30">
-            <div className="absolute top-[20%] right-0 w-3 h-[1px] bg-white"></div>
-            <div className="absolute top-[20.5%] right-0 w-1.5 h-[1px] bg-white"></div>
-            <div className="absolute top-[21%] right-0 w-1.5 h-[1px] bg-white"></div>
-            <div className="absolute top-[80%] right-0 w-3 h-[1px] bg-white"></div>
-            <div className="absolute top-[20%] right-6 text-[10px] text-white font-mono tracking-widest origin-top-right rotate-90">
+          <div className="absolute right-[10%] top-0 bottom-0 w-[1px] bg-[#f5f0e1] mix-blend-difference z-10 hidden md:block opacity-30">
+            <div className="absolute top-[20%] right-0 w-3 h-[1px] bg-[#f5f0e1]"></div>
+            <div className="absolute top-[20.5%] right-0 w-1.5 h-[1px] bg-[#f5f0e1]"></div>
+            <div className="absolute top-[21%] right-0 w-1.5 h-[1px] bg-[#f5f0e1]"></div>
+            <div className="absolute top-[80%] right-0 w-3 h-[1px] bg-[#f5f0e1]"></div>
+            <div className="absolute top-[20%] right-6 text-[10px] text-[#f5f0e1] font-mono tracking-widest origin-top-right rotate-90">
                 COORD.SYS.01
             </div>
           </div>
-          <div className="absolute right-[5%] top-0 bottom-0 w-[1px] bg-white mix-blend-difference z-10 hidden md:block opacity-10"></div>
+          <div className="absolute right-[5%] top-0 bottom-0 w-[1px] bg-[#f5f0e1] mix-blend-difference z-10 hidden md:block opacity-10"></div>
       </div>
 
       {/* HERO TEXT */}
       <section className="h-screen flex flex-col justify-center px-6 md:px-24 relative z-10 mix-blend-difference text-white pointer-events-none">
         <div className="max-w-5xl w-full pt-20 pointer-events-auto">
-          <h1 className="text-[14vw] md:text-[9rem] font-bold tracking-tighter leading-[0.8] mb-8">
+          <h1 className="text-[14vw] md:text-[9rem] font-bold tracking-tighter leading-[0.8] mb-8 text-white">
             Andrew<br/>Wang
           </h1>
           <div className="h-2 w-32 bg-white mb-12"></div>
@@ -455,7 +643,7 @@ const WorkPage = () => {
           <div className="absolute right-[25%] top-0 bottom-0 w-[1px] bg-white/20 hidden md:block"></div>
           <div className="absolute left-[15%] top-0 bottom-0 w-[1px] bg-white/20 hidden md:block"></div>
       </div>
-
+      
       <div className="max-w-[1600px] mx-auto">
           
         <div className="mb-32 relative pl-4 md:pl-0">
@@ -721,6 +909,28 @@ export default function FluidPortfolio() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Calculate canvas opacity for Work page fade effects
+  let canvasOpacity = 1;
+  if (typeof document !== 'undefined') {
+      if (currentPage === 'writing') {
+          canvasOpacity = Math.max(0, 1 - scrollY / 600);
+      } else if (currentPage === 'work') {
+          // Fade out as user scrolls into the project list
+          const topFadeStart = 100;
+          const topFadeDist = 400;
+          const topOpacity = Math.max(0, 1 - Math.max(0, scrollY - topFadeStart) / topFadeDist);
+
+          // Fade back in at the bottom (Contact section)
+          const docHeight = document.documentElement.scrollHeight;
+          const winHeight = window.innerHeight;
+          const distFromBottom = docHeight - (scrollY + winHeight);
+          const bottomFadeDist = 300;
+          const bottomOpacity = Math.max(0, 1 - Math.max(0, distFromBottom) / bottomFadeDist);
+
+          canvasOpacity = Math.max(topOpacity, bottomOpacity);
+      }
+  }
+
   return (
     <div className="bg-[#0a0a0a] text-white min-h-screen relative selection:bg-white selection:text-black font-sans overflow-x-hidden">
       
@@ -729,13 +939,18 @@ export default function FluidPortfolio() {
         className="fixed inset-0 pointer-events-none z-30 mix-blend-screen" 
         style={{ 
             pointerEvents: 'none',
-            opacity: currentPage === 'writing' ? Math.max(0, 1 - scrollY / 600) : 1,
+            opacity: canvasOpacity,
             maskImage: currentPage === 'writing' ? 'linear-gradient(to bottom, black 0%, black 40%, transparent 90%)' : 'none',
             WebkitMaskImage: currentPage === 'writing' ? 'linear-gradient(to bottom, black 0%, black 40%, transparent 90%)' : 'none'
         }}
       >
-        <Canvas camera={{ position: [0, 0, 5], fov: 60 }} style={{ pointerEvents: 'none' }}>
-            {currentPage === 'writing' ? <NeuralNetworkEffect /> : <DustParticles />}
+        <Canvas 
+            camera={{ position: [0, 0, 5], fov: 60 }} 
+            style={{ pointerEvents: 'none' }}
+            eventSource={document.body} 
+            eventPrefix="client"
+        >
+            {currentPage === 'writing' ? <NeuralNetworkEffect /> : (currentPage === 'work' ? <OptimizationManifold /> : <DustParticles />)}
         </Canvas>
       </div>
 
