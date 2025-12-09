@@ -69,44 +69,12 @@ interface Project {
 
 const projects: Project[] = [
   {
-    id: "brownian",
-    title: "Brownian Motion Webapp",
-    description: "Interactive stochastic dynamics visualizer with parallelized Euler-Maruyama solver.",
-    longDescription: "A high-performance educational tool designed to build intuition for stochastic calculus. By visualizing the convergence of random walks to continuous Wiener processes, users can interactively explore concepts like Ito's Lemma and geometric volatility. The engine runs a parallelized Euler-Maruyama solver on the GPU via custom WebGL shaders, handling 100,000+ simultaneous paths at 60fps.",
-    year: "2025",
-    month: "MAR",
-    tags: ["WebGL", "Physics", "React", "GLSL"],
-    type: "Simulation",
-    role: "Full Stack Engineer",
-    stats: [
-        { label: "Paths", value: "100k+" },
-        { label: "FPS", value: "60" },
-        { label: "Error", value: "<0.5%" }
-    ]
-  },
-  {
-    id: "poker",
-    title: "HUNL Poker CFR",
-    description: "Monte Carlo CFR engine for optimal poker strategy. 95% convergence.",
-    longDescription: "A C++ implementation of Monte Carlo Counterfactual Regret Minimization (MCCFR) for solving Heads-Up No-Limit Texas Hold'em. The solver uses information abstraction clustering to reduce the game state space by 90% while maintaining Nash Equilibrium approximation. Includes a custom hand evaluator optimized with AVX2 instructions.",
-    year: "2025",
-    month: "FEB",
-    tags: ["C++", "Game Theory", "AI", "OpenMP"],
-    type: "Algorithm",
-    role: "Systems Engineer",
-    stats: [
-        { label: "Convergence", value: "95%" },
-        { label: "State Redux", value: "90%" },
-        { label: "Speedup", value: "40x" }
-    ]
-  },
-  {
     id: "gas",
     title: "Gas Price Forecasting",
     description: "ARIMA-GARCH model for prediction markets. Competition Finalist. ROC AUC 0.998, 23% calibration improvement.",
     longDescription: "Developed a hybrid ARIMA-GARCH statistical model to forecast European natural gas prices for a quantitative trading competition. The model captures both the mean reversion of price levels and the volatility clustering inherent in energy markets. It achieved a ROC AUC of 0.998 on out-of-sample data, significantly outperforming standard time-series baselines.",
     year: "2025",
-    month: "JAN",
+    month: "OCT",
     tags: ["Python", "TimeSeries", "ML", "Pandas"],
     type: "Research",
     role: "Quant Researcher",
@@ -117,12 +85,28 @@ const projects: Project[] = [
     ]
   },
   {
+    id: "brownian",
+    title: "Brownian Motion Webapp",
+    description: "Interactive stochastic dynamics visualizer with parallelized Euler-Maruyama solver.",
+    longDescription: "A high-performance educational tool designed to build intuition for stochastic calculus. By visualizing the convergence of random walks to continuous Wiener processes, users can interactively explore concepts like Ito's Lemma and geometric volatility. The engine runs a parallelized Euler-Maruyama solver on the GPU via custom WebGL shaders, handling 100,000+ simultaneous paths at 60fps.",
+    year: "2025",
+    month: "SEP",
+    tags: ["WebGL", "Physics", "React", "GLSL"],
+    type: "Simulation",
+    role: "Full Stack Engineer",
+    stats: [
+        { label: "Paths", value: "100k+" },
+        { label: "FPS", value: "60" },
+        { label: "Error", value: "<0.5%" }
+    ]
+  },
+  {
     id: "earthscope",
     title: "EarthScope-AI",
     description: "3D UNet disaster classification pipeline. CDC finalist.",
     longDescription: "An end-to-end deep learning pipeline for rapid disaster assessment using satellite imagery. The core architecture is a modified 3D U-Net that fuses RGB optical data, Digital Elevation Models (DEM), and historical climate data to segment flood zones in real-time. The system was optimized for edge deployment on limited hardware.",
-    year: "2024",
-    month: "DEC",
+    year: "2025",
+    month: "AUG",
     tags: ["PyTorch", "Computer Vision", "Geo", "Docker"],
     type: "Deep Learning",
     role: "ML Engineer",
@@ -130,6 +114,22 @@ const projects: Project[] = [
         { label: "Accuracy", value: "94.2%" },
         { label: "Inference", value: "120ms" },
         { label: "Award", value: "Finalist" }
+    ]
+  },
+  {
+    id: "poker",
+    title: "HUNL Poker CFR",
+    description: "Monte Carlo CFR engine for optimal poker strategy. 95% convergence.",
+    longDescription: "A C++ implementation of Monte Carlo Counterfactual Regret Minimization (MCCFR) for solving Heads-Up No-Limit Texas Hold'em. The solver uses information abstraction clustering to reduce the game state space by 90% while maintaining Nash Equilibrium approximation. Includes a custom hand evaluator optimized with AVX2 instructions.",
+    year: "2025",
+    month: "JAN-MAR",
+    tags: ["C++", "Game Theory", "AI", "OpenMP"],
+    type: "Algorithm",
+    role: "Systems Engineer",
+    stats: [
+        { label: "Convergence", value: "95%" },
+        { label: "State Redux", value: "90%" },
+        { label: "Speedup", value: "40x" }
     ]
   }
 ];
@@ -668,6 +668,76 @@ const WorkPage = ({
       </div>
       
       <div className="max-w-[1600px] mx-auto">
+        {selectedProject ? (
+            // === PROJECT DETAIL VIEW ===
+            <div className="animate-fade-in relative z-50">
+                <button 
+                    onClick={() => setSelectedProjectId(null)}
+                    className="group flex items-center gap-2 text-white/50 hover:text-white mb-12 uppercase tracking-widest text-xs font-bold transition-all cursor-pointer hover:translate-x-[-4px]"
+                >
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                    Back to Index
+                </button>
+
+                {/* Header */}
+                <div className="border-b border-white/20 pb-12 mb-12">
+                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                         <div>
+                            <span className="text-nobel-gold font-mono uppercase tracking-widest text-sm mb-4 block">{selectedProject.type} /// {selectedProject.year}</span>
+                            <h1 className="text-5xl md:text-8xl font-bold text-white tracking-tighter leading-none">{selectedProject.title}</h1>
+                         </div>
+                         <div className="flex flex-wrap gap-2 md:justify-end">
+                             {selectedProject.tags.map(tag => (
+                                 <span key={tag} className="border border-white/20 px-3 py-1 text-white/60 text-xs uppercase tracking-wider rounded-full">{tag}</span>
+                             ))}
+                         </div>
+                     </div>
+                     <p className="text-2xl text-white/80 max-w-3xl font-light leading-relaxed">
+                         {selectedProject.description}
+                     </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                    {/* Main Content */}
+                    <div className="lg:col-span-2 space-y-12">
+                        <div>
+                            <h3 className="text-white text-lg font-bold uppercase tracking-widest mb-6 border-l-2 border-white pl-4">About the Project</h3>
+                            <p className="text-lg text-white/70 leading-relaxed font-serif whitespace-pre-wrap">
+                                {selectedProject.longDescription}
+                            </p>
+                        </div>
+
+                        {/* Visual Placeholder */}
+                        <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
+                             <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                             <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
+                        </div>
+                    </div>
+
+                    {/* Sidebar Stats */}
+                    <div className="space-y-12">
+                        <div className="bg-white/5 p-8 border border-white/10 backdrop-blur-sm">
+                            <h4 className="text-white/50 text-xs font-mono uppercase tracking-widest mb-8">Key Metrics</h4>
+                            <div className="space-y-8">
+                                {selectedProject.stats.map((stat, i) => (
+                                    <div key={i}>
+                                        <div className="text-4xl font-bold text-white mb-1">{stat.value}</div>
+                                        <div className="text-sm text-white/40 font-mono">{stat.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 className="text-white/50 text-xs font-mono uppercase tracking-widest mb-4">Role</h4>
+                            <p className="text-white text-lg">{selectedProject.role}</p>
+                        </div>
+
+                        <button className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors flex items-center justify-center gap-3 group">
+                            Launch Case Study <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        </button>
+                    </div>
+                </div>
             </div>
         ) : (
             // === PROJECT LIST VIEW ===
@@ -697,7 +767,7 @@ const WorkPage = ({
                             setSelectedProjectId(project.id);
                             window.scrollTo({top: 0, behavior: 'smooth'});
                         }}
-                        className="group cursor-pointer relative border-t border-white/20 py-12 hover:border-white transition-colors duration-500"
+                        className="group cursor-pointer relative border-t border-white/20 py-12 hover:border-white transition-colors duration-500 z-50"
                     >
                         {/* Hover Light Effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
