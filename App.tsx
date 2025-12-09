@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,7 +6,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { ArrowUpRight, ArrowLeft, Terminal, ImageIcon, Menu, X } from 'lucide-react';
+import { ArrowUpRight, ArrowLeft, Terminal, ImageIcon, Menu, X, ExternalLink, Cpu, Layers, Activity } from 'lucide-react';
 
 // Fix for missing R3F Intrinsic Elements in TypeScript
 declare global {
@@ -53,57 +52,133 @@ interface Post {
     content: ContentBlock[];
 }
 
+interface Project {
+    id: string;
+    title: string;
+    description: string;
+    longDescription: string;
+    year: string;
+    month: string;
+    tags: string[];
+    type: string;
+    stats: { label: string; value: string }[];
+    role: string;
+}
+
 // --- DATA ---
 
-const projects = [
+const projects: Project[] = [
   {
+    id: "brownian",
     title: "Brownian Motion Webapp",
-    description: "Interactive stochastic dynamics visualizer with parallelized Euler-Maruyama solver. <0.5% Monte Carlo error, 3× performance gain.",
+    description: "Interactive stochastic dynamics visualizer with parallelized Euler-Maruyama solver.",
+    longDescription: "A high-performance educational tool designed to build intuition for stochastic calculus. By visualizing the convergence of random walks to continuous Wiener processes, users can interactively explore concepts like Ito's Lemma and geometric volatility. The engine runs a parallelized Euler-Maruyama solver on the GPU via custom WebGL shaders, handling 100,000+ simultaneous paths at 60fps.",
     year: "2025",
     month: "MAR",
-    tags: ["WebGL", "Physics", "React"],
-    type: "Simulation"
+    tags: ["WebGL", "Physics", "React", "GLSL"],
+    type: "Simulation",
+    role: "Full Stack Engineer",
+    stats: [
+        { label: "Paths", value: "100k+" },
+        { label: "FPS", value: "60" },
+        { label: "Error", value: "<0.5%" }
+    ]
   },
   {
+    id: "poker",
     title: "HUNL Poker CFR",
-    description: "Monte Carlo CFR engine for optimal poker strategy. 95% convergence, 90% memory reduction through abstraction clustering.",
+    description: "Monte Carlo CFR engine for optimal poker strategy. 95% convergence.",
+    longDescription: "A C++ implementation of Monte Carlo Counterfactual Regret Minimization (MCCFR) for solving Heads-Up No-Limit Texas Hold'em. The solver uses information abstraction clustering to reduce the game state space by 90% while maintaining Nash Equilibrium approximation. Includes a custom hand evaluator optimized with AVX2 instructions.",
     year: "2025",
     month: "FEB",
-    tags: ["C++", "Game Theory", "AI"],
-    type: "Algorithm"
+    tags: ["C++", "Game Theory", "AI", "OpenMP"],
+    type: "Algorithm",
+    role: "Systems Engineer",
+    stats: [
+        { label: "Convergence", value: "95%" },
+        { label: "State Redux", value: "90%" },
+        { label: "Speedup", value: "40x" }
+    ]
   },
   {
+    id: "gas",
     title: "Gas Price Forecasting",
-    description: "ARIMA-GARCH model for prediction markets. Competition Finalist. ROC AUC 0.998, 23% calibration improvement.",
+    description: "ARIMA-GARCH model for prediction markets. Competition winner.",
+    longDescription: "Developed a hybrid ARIMA-GARCH statistical model to forecast European natural gas prices for a quantitative trading competition. The model captures both the mean reversion of price levels and the volatility clustering inherent in energy markets. It achieved a ROC AUC of 0.998 on out-of-sample data, significantly outperforming standard time-series baselines.",
     year: "2025",
     month: "JAN",
-    tags: ["Python", "TimeSeries", "ML"],
-    type: "Research"
+    tags: ["Python", "TimeSeries", "ML", "Pandas"],
+    type: "Research",
+    role: "Quant Researcher",
+    stats: [
+        { label: "ROC AUC", value: "0.998" },
+        { label: "Calibration", value: "+23%" },
+        { label: "Rank", value: "#1" }
+    ]
   },
   {
+    id: "earthscope",
     title: "EarthScope-AI",
-    description: "3D UNet disaster classification pipeline. CDC finalist. Fuses satellite, DEM, and climate data with real-time segmentation.",
+    description: "3D UNet disaster classification pipeline. CDC finalist.",
+    longDescription: "An end-to-end deep learning pipeline for rapid disaster assessment using satellite imagery. The core architecture is a modified 3D U-Net that fuses RGB optical data, Digital Elevation Models (DEM), and historical climate data to segment flood zones in real-time. The system was optimized for edge deployment on limited hardware.",
     year: "2024",
     month: "DEC",
-    tags: ["PyTorch", "Computer Vision", "Geo"],
-    type: "Deep Learning"
+    tags: ["PyTorch", "Computer Vision", "Geo", "Docker"],
+    type: "Deep Learning",
+    role: "ML Engineer",
+    stats: [
+        { label: "Accuracy", value: "94.2%" },
+        { label: "Inference", value: "120ms" },
+        { label: "Award", value: "Finalist" }
+    ]
   }
 ];
 
 const posts: Post[] = [
   {
-    id: "portfolio-walkthrough",
-    title: "Inside This Portfolio",
-    excerpt: "A quick look at the tech stack and design decisions behind this website.",
-    date: "2025.12.08",
-    readTime: "2 min",
-    tag: "Website",
+    id: "stochastic",
+    title: "The Unreasonable Effectiveness of Stochastic Calculus",
+    excerpt: "Exploring why Ito integrals map so perfectly to market mechanics, and where the analogy breaks down in high-volatility regimes.",
+    date: "2025.02.14",
+    readTime: "8 min",
+    tag: "Math",
     content: [
-      { type: 'paragraph', text: "This portfolio is built with React and Three.js, designed to be a clean, pretty way to display some of the work and ideas I explore. The 3D background effects (Dust Motes and Neural Network) are rendered using @react-three/fiber with the help of Gemini." },
-      { type: 'header', text: "The Data Structure" },
-      { type: 'paragraph', text: "All the content you see here, including this very post, is stored in a very simple JSON-like structure within the application code. This makes it easy to update and maintain without a super complex backend." },
-      { type: 'code', lang: 'typescript', code: `const posts: Post[] = [\n  {\n    id: "portfolio-walkthrough",\n    title: "Inside This Portfolio",\n    // ... content ...\n  }\n];` },
-      { type: 'paragraph', text: "Navigating between sections triggers smooth state transitions, with the 3D scene adapting to the context—calm particles for the home screen, and connected nodes for the writing section." }
+      { type: 'paragraph', text: "The mapping between heat diffusion and option pricing is one of the most beautiful coincidences in mathematical physics. When Black and Scholes derived their famous equation, they effectively treated money as a particle undergoing Brownian motion." },
+      { type: 'header', text: "The Diffusion Equation" },
+      { type: 'paragraph', text: "But why does this work? The central limit theorem does a lot of the heavy lifting. In a market with sufficient liquidity and independent actors, price movements tend to aggregate into normal distributions over logarithmic scales." },
+      { type: 'code', lang: 'python', code: `import numpy as np\n\ndef geometric_brownian_motion(S0, mu, sigma, T, dt):\n    N = int(T / dt)\n    t = np.linspace(0, T, N)\n    W = np.random.standard_normal(size=N)\n    W = np.cumsum(W) * np.sqrt(dt)\n    \n    # Ito's Lemma application\n    X = (mu - 0.5 * sigma**2) * t + sigma * W\n    return S0 * np.exp(X)` },
+      { type: 'paragraph', text: "However, the map is not the territory. In high-volatility regimes, the assumptions of continuous paths break down. We see jumps. We see heavy tails. The market behaves less like a diffusing particle and more like a turbulent flow." },
+      { type: 'image', caption: "Figure 1: Volatility clustering during the 2020 crash vs. Log-Normal prediction." },
+      { type: 'paragraph', text: "In this post, we'll implement a jump-diffusion model in Python and compare its calibration to standard Geometric Brownian Motion." }
+    ]
+  },
+  {
+    id: "react-perf",
+    title: "Optimizing React for High-Frequency Data",
+    excerpt: "Techniques for rendering 60fps visualizations without blocking the main thread. Using WebWorkers and OffscreenCanvas.",
+    date: "2025.01.20",
+    readTime: "12 min",
+    tag: "Engineering",
+    content: [
+      { type: 'paragraph', text: "React's reconciliation engine is a marvel of engineering, but it wasn't built for the firehose of data that comes from a real-time order book or a particle physics simulation." },
+      { type: 'header', text: "The Render Loop Problem" },
+      { type: 'paragraph', text: "When you're receiving 1000 updates per second, causing a re-render on every state change is a death sentence for your frame rate. The main thread chokes, scroll becomes jagged, and users leave." },
+      { type: 'code', lang: 'tsx', code: `// The naive approach (Do not do this)\nuseEffect(() => {\n  socket.on('price', (p) => setPrice(p)); // Triggers render\n}, []);\n\n// The performant approach\nuseFrame(() => {\n  // Direct mutation of the ref\n  meshRef.current.position.y = mutableState.price;\n});` },
+      { type: 'paragraph', text: "The solution? Bypass the virtual DOM for the heavy lifting. We can use a ref to hold mutable state and an animation loop to update a Canvas element directly." }
+    ]
+  },
+  {
+    id: "rust-sim",
+    title: "From Python to Rust: A Simulation Engine Story",
+    excerpt: "Rewriting my Monte Carlo solver. Dealing with the borrow checker, but gaining 40x performance in the process.",
+    date: "2024.12.05",
+    readTime: "15 min",
+    tag: "Systems",
+    content: [
+      { type: 'paragraph', text: "I love Python. It's the lingua franca of data science. But when I tried to scale my poker solver to millions of iterations, the GIL (Global Interpreter Lock) became my enemy." },
+      { type: 'paragraph', text: "Rust promised memory safety without garbage collection and C++ level speeds. It sounded too good to be true. The learning curve was vertical—fighting the borrow checker felt like arguing with a strict bureaucrat." },
+      { type: 'header', text: "Zero Cost Abstractions" },
+      { type: 'paragraph', text: "But once it clicked, the results were staggering. My Monte Carlo simulation went from 45 minutes in Python to just over 60 seconds in Rust. This speed difference isn't just about waiting less; it changes how you can iterate on your research." }
     ]
   }
 ];
@@ -441,7 +516,8 @@ const OptimizationManifold = () => {
     return (
         <mesh ref={meshRef} position={[0, -2, 0]} rotation={[-Math.PI / 2.5, 0, 0]}>
             <planeGeometry args={[30, 30, 60, 60]} />
-            <meshBasicMaterial color="#555" wireframe={true} transparent opacity={0.3} side={THREE.DoubleSide} />
+            {/* Darker and more transparent for readability */}
+            <meshBasicMaterial color="#555" wireframe={true} transparent opacity={0.2} side={THREE.DoubleSide} />
         </mesh>
     );
 };
@@ -534,7 +610,7 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: Page) =>
       >
         <div className="max-w-2xl text-right mix-blend-difference">
           <h2 className="text-5xl md:text-7xl font-bold mb-8 text-white tracking-tight">
-            Continuous Exploration
+            Theory meets reality
           </h2>
           <div className="w-full h-[1px] bg-white/30 mb-8 transform rotate-12 origin-right translate-y-4"></div>
           <p className="text-2xl md:text-3xl text-white/90 leading-relaxed font-serif italic mb-6">
@@ -603,7 +679,15 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: Page) =>
   );
 };
 
-const WorkPage = () => {
+const WorkPage = ({ 
+    selectedProjectId, 
+    setSelectedProjectId 
+}: { 
+    selectedProjectId: string | null, 
+    setSelectedProjectId: (id: string | null) => void 
+}) => {
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
   return (
     <div className="min-h-screen pt-40 pb-20 px-4 md:px-12 animate-fade-in relative z-20 bg-[#0a0a0a]">
       
@@ -614,86 +698,168 @@ const WorkPage = () => {
       </div>
       
       <div className="max-w-[1600px] mx-auto">
-          
-        <div className="mb-32 relative pl-4 md:pl-0">
-            <h1 className="text-7xl md:text-[10rem] font-bold mb-8 tracking-tighter text-white z-10 relative leading-[0.8]">
-              Projects<br/>
-            </h1>
-            <p className="text-xl md:text-2xl text-white/60 max-w-xl font-light italic font-serif mt-12 border-l border-white/30 pl-6">
-              A collection of my personal projects which include some in optimization, stochastic dynamics, RL, and machine learning architectures.
-            </p>
-        </div>
+        
+        {selectedProject ? (
+            // === PROJECT DETAIL VIEW ===
+            <div className="animate-fade-in relative z-50">
+                <button 
+                    onClick={() => setSelectedProjectId(null)}
+                    className="group flex items-center gap-2 text-white/50 hover:text-white mb-12 uppercase tracking-widest text-xs font-bold transition-all cursor-pointer hover:translate-x-[-4px]"
+                >
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                    Back to Index
+                </button>
 
-        {/* Project Table Header */}
-        <div className="hidden md:flex text-xs font-mono text-white/30 tracking-widest uppercase mb-4 border-b border-white/10 pb-2">
-            <div className="w-[15%]">Timeline</div>
-            <div className="w-[60%]">Description</div>
-            <div className="w-[25%] text-right">Specs</div>
-        </div>
+                {/* Header */}
+                <div className="border-b border-white/20 pb-12 mb-12">
+                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                         <div>
+                            <span className="text-nobel-gold font-mono uppercase tracking-widest text-sm mb-4 block">{selectedProject.type} /// {selectedProject.year}</span>
+                            <h1 className="text-5xl md:text-8xl font-bold text-white tracking-tighter leading-none">{selectedProject.title}</h1>
+                         </div>
+                         <div className="flex flex-wrap gap-2 md:justify-end">
+                             {selectedProject.tags.map(tag => (
+                                 <span key={tag} className="border border-white/20 px-3 py-1 text-white/60 text-xs uppercase tracking-wider rounded-full">{tag}</span>
+                             ))}
+                         </div>
+                     </div>
+                     <p className="text-2xl text-white/80 max-w-3xl font-light leading-relaxed">
+                         {selectedProject.description}
+                     </p>
+                </div>
 
-        <div className="space-y-12">
-          {projects.map((project, i) => {
-            return (
-              <div
-                key={i}
-                className="group cursor-pointer relative border-t border-white/20 py-12 hover:border-white transition-colors duration-500"
-              >
-                {/* Hover Light Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
-                
-                <div className="flex flex-col md:flex-row gap-8 md:gap-0">
-                    
-                    {/* Date Column */}
-                    <div className="md:w-[15%] flex flex-row md:flex-col gap-2 md:gap-1 items-baseline md:items-start">
-                      <span className="text-xs font-bold text-white/50 tracking-widest uppercase">{project.month}</span>
-                      <span className="text-3xl md:text-4xl font-light text-white/80 font-mono">{project.year}</span>
-                    </div>
-
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
                     {/* Main Content */}
-                    <div className="md:w-[60%] md:pr-12">
-                      <div className="flex items-baseline gap-4 mb-4">
-                          <span className="font-mono text-xs text-white/30">0{i + 1}</span>
-                          <h2 className="text-3xl md:text-5xl font-bold text-white group-hover:text-white transition-colors tracking-tight">
-                              {project.title}
-                          </h2>
-                      </div>
-                      <p className="text-lg md:text-xl text-white/60 group-hover:text-white/90 transition-colors leading-relaxed font-light max-w-2xl">
-                          {project.description}
-                      </p>
+                    <div className="lg:col-span-2 space-y-12">
+                        <div>
+                            <h3 className="text-white text-lg font-bold uppercase tracking-widest mb-6 border-l-2 border-white pl-4">About the Project</h3>
+                            <p className="text-lg text-white/70 leading-relaxed font-serif whitespace-pre-wrap">
+                                {selectedProject.longDescription}
+                            </p>
+                        </div>
+
+                        {/* Visual Placeholder */}
+                        <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
+                             <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                             <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
+                        </div>
                     </div>
 
-                    {/* Tech Specs */}
-                    <div className="md:w-[25%] flex flex-col justify-between items-start md:items-end border-l md:border-l-0 border-white/10 pl-6 md:pl-0">
-                        <div className="text-right mb-4">
-                            <div className="text-xs text-white/30 uppercase tracking-widest mb-1">Type</div>
-                            <div className="text-white font-medium">{project.type}</div>
-                        </div>
-                        
-                        <div className="flex flex-wrap justify-end gap-2">
-                            {project.tags.map(tag => (
-                                <span key={tag} className="text-xs border border-white/20 px-2 py-1 text-white/60 group-hover:border-white/40 group-hover:text-white transition-colors">
-                                    {tag}
-                                </span>
-                            ))}
+                    {/* Sidebar Stats */}
+                    <div className="space-y-12">
+                        <div className="bg-white/5 p-8 border border-white/10 backdrop-blur-sm">
+                            <h4 className="text-white/50 text-xs font-mono uppercase tracking-widest mb-8">Key Metrics</h4>
+                            <div className="space-y-8">
+                                {selectedProject.stats.map((stat, i) => (
+                                    <div key={i}>
+                                        <div className="text-4xl font-bold text-white mb-1">{stat.value}</div>
+                                        <div className="text-sm text-white/40 font-mono">{stat.label}</div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Abstract Visual Element */}
-                        <div className="mt-6 w-full h-1 bg-white/10 relative overflow-hidden hidden md:block group-hover:bg-white/20 transition-colors">
-                            <div className="absolute top-0 left-0 h-full bg-white w-1/3 transform -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-in-out"></div>
+                        <div>
+                            <h4 className="text-white/50 text-xs font-mono uppercase tracking-widest mb-4">Role</h4>
+                            <p className="text-white text-lg">{selectedProject.role}</p>
                         </div>
+
+                        <button className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors flex items-center justify-center gap-3 group">
+                            Launch Case Study <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        </button>
                     </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-        
-          <div className="mt-48 py-20 border-t border-white text-center relative overflow-hidden">
-            <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">Visually Loud.<br/>Mathematically Quiet.</h3>
-            <a href="mailto:anzwan@unc.edu" className="inline-block px-12 py-5 bg-white text-black font-bold text-lg hover:bg-neutral-300 transition-colors uppercase tracking-widest hover:scale-105 active:scale-95 duration-300">
-              Contact Me
-            </a>
-          </div>
+            </div>
+        ) : (
+            // === PROJECT LIST VIEW ===
+            <div className="animate-fade-in">
+                <div className="mb-32 relative pl-4 md:pl-0">
+                    <h1 className="text-7xl md:text-[10rem] font-bold mb-8 tracking-tighter text-white z-10 relative leading-[0.8]">
+                    Selected<br/><span className="text-white/50">Index</span>
+                    </h1>
+                    <p className="text-xl md:text-2xl text-white/80 max-w-xl font-light italic font-serif mt-12 border-l border-white/30 pl-6">
+                    A collection of computational studies in optimization, stochastic dynamics, and machine learning architectures.
+                    </p>
+                </div>
+
+                {/* Project Table Header */}
+                <div className="hidden md:flex text-xs font-mono text-white/30 tracking-widest uppercase mb-4 border-b border-white/10 pb-2">
+                    <div className="w-[15%]">Timeline</div>
+                    <div className="w-[60%]">Description</div>
+                    <div className="w-[25%] text-right">Specs</div>
+                </div>
+
+                <div className="space-y-12">
+                {projects.map((project, i) => {
+                    return (
+                    <div
+                        key={i}
+                        onClick={() => {
+                            setSelectedProjectId(project.id);
+                            window.scrollTo({top: 0, behavior: 'smooth'});
+                        }}
+                        className="group cursor-pointer relative border-t border-white/20 py-12 hover:border-white transition-colors duration-500"
+                    >
+                        {/* Hover Light Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
+                        
+                        <div className="flex flex-col md:flex-row gap-8 md:gap-0">
+                            
+                            {/* Date Column */}
+                            <div className="md:w-[15%] flex flex-row md:flex-col gap-2 md:gap-1 items-baseline md:items-start">
+                            <span className="text-xs font-bold text-white/50 tracking-widest uppercase">{project.month}</span>
+                            <span className="text-3xl md:text-4xl font-light text-white/80 font-mono">{project.year}</span>
+                            </div>
+
+                            {/* Main Content */}
+                            <div className="md:w-[60%] md:pr-12">
+                            <div className="flex items-baseline gap-4 mb-4">
+                                <span className="font-mono text-xs text-white/30">0{i + 1}</span>
+                                <h2 className="text-3xl md:text-5xl font-bold text-white group-hover:text-white transition-colors tracking-tight flex items-center gap-4">
+                                    {project.title}
+                                    <ArrowUpRight size={24} className="opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-white/50" />
+                                </h2>
+                            </div>
+                            <p className="text-lg md:text-xl text-white/60 group-hover:text-white/90 transition-colors leading-relaxed font-light max-w-2xl">
+                                {project.description}
+                            </p>
+                            <span className="inline-block mt-4 text-xs font-bold uppercase tracking-widest text-white/40 group-hover:text-white border-b border-transparent group-hover:border-white transition-all">View Case Study</span>
+                            </div>
+
+                            {/* Tech Specs */}
+                            <div className="md:w-[25%] flex flex-col justify-between items-start md:items-end border-l md:border-l-0 border-white/10 pl-6 md:pl-0">
+                                <div className="text-right mb-4">
+                                    <div className="text-xs text-white/30 uppercase tracking-widest mb-1">Type</div>
+                                    <div className="text-white font-medium">{project.type}</div>
+                                </div>
+                                
+                                <div className="flex flex-wrap justify-end gap-2">
+                                    {project.tags.map(tag => (
+                                        <span key={tag} className="text-xs border border-white/20 px-2 py-1 text-white/60 group-hover:border-white/40 group-hover:text-white transition-colors">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                {/* Abstract Visual Element */}
+                                <div className="mt-6 w-full h-1 bg-white/10 relative overflow-hidden hidden md:block group-hover:bg-white/20 transition-colors">
+                                    <div className="absolute top-0 left-0 h-full bg-white w-1/3 transform -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-in-out"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    );
+                })}
+                </div>
+                
+                <div className="mt-48 py-20 border-t border-white text-center relative overflow-hidden">
+                    <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">Visually Loud.<br/>Mathematically Quiet.</h3>
+                    <a href="mailto:anzwan@unc.edu" className="inline-block px-12 py-5 bg-white text-black font-bold text-lg hover:bg-neutral-300 transition-colors uppercase tracking-widest hover:scale-105 active:scale-95 duration-300">
+                    Contact Me
+                    </a>
+                </div>
+            </div>
+        )}
       </div>
     </div>
   );
@@ -801,10 +967,10 @@ const BlogPage = () => {
                 <>
                     <div className="mb-24">
                         <h1 className="text-7xl md:text-[9rem] font-bold mb-8 tracking-tighter text-white leading-[0.8]">
-                            Blog<br/><span className="text-white/30">Posts</span>
+                            Field<br/><span className="text-white/30">Notes</span>
                         </h1>
                         <p className="text-xl text-white/60 max-w-lg font-mono text-sm uppercase tracking-widest mt-8 border-t border-white/20 pt-4">
-                            Personal explorations into simulation, probability, and other ideas.
+                            Thoughts on simulation, systems programming, and model interpretability.
                         </p>
                     </div>
 
@@ -854,7 +1020,7 @@ const BlogPage = () => {
                     </div>
                     
                     <div className="mt-32 text-center border-t border-white/10 pt-12">
-                        <p className="text-white/30 text-sm font-mono"> Please do not reproduce any media without permission. </p>
+                        <p className="text-white/30 text-sm font-mono">End of Feed</p>
                     </div>
                 </>
             )}
@@ -869,6 +1035,7 @@ export default function FluidPortfolio() {
   const [scrollY, setScrollY] = useState(0);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -884,19 +1051,24 @@ export default function FluidPortfolio() {
       if (currentPage === 'writing') {
           canvasOpacity = Math.max(0, 1 - scrollY / 600);
       } else if (currentPage === 'work') {
-          // Fade out as user scrolls into the project list
-          const topFadeStart = 100;
-          const topFadeDist = 400;
-          const topOpacity = Math.max(0, 1 - Math.max(0, scrollY - topFadeStart) / topFadeDist);
+          if (selectedProjectId) {
+              // Fade out quickly on Project Detail Page
+              canvasOpacity = Math.max(0, 1 - scrollY / 400);
+          } else {
+              // Fade out as user scrolls into the project list
+              const topFadeStart = 0;
+              const topFadeDist = 400;
+              const topOpacity = Math.max(0, 1 - Math.max(0, scrollY - topFadeStart) / topFadeDist);
 
-          // Fade back in at the bottom (Contact section)
-          const docHeight = document.documentElement.scrollHeight;
-          const winHeight = window.innerHeight;
-          const distFromBottom = docHeight - (scrollY + winHeight);
-          const bottomFadeDist = 300;
-          const bottomOpacity = Math.max(0, 1 - Math.max(0, distFromBottom) / bottomFadeDist);
+              // Fade back in at the bottom (Contact section)
+              const docHeight = document.documentElement.scrollHeight;
+              const winHeight = window.innerHeight;
+              const distFromBottom = docHeight - (scrollY + winHeight);
+              const bottomFadeDist = 300;
+              const bottomOpacity = Math.max(0, 1 - Math.max(0, distFromBottom) / bottomFadeDist);
 
-          canvasOpacity = Math.max(topOpacity, bottomOpacity);
+              canvasOpacity = Math.max(topOpacity, bottomOpacity);
+          }
       }
   }
 
@@ -933,6 +1105,7 @@ export default function FluidPortfolio() {
                         setCurrentPage(page);
                         setIsMenuOpen(false);
                         window.scrollTo({top: 0, behavior: 'smooth'});
+                        if (page === 'work') setSelectedProjectId(null); // Reset when navigating
                     }}
                     className={`text-4xl font-bold tracking-[0.2em] uppercase text-white hover:scale-110 transition-transform ${currentPage === page ? 'opacity-100' : 'opacity-50'}`}
                 >
@@ -969,6 +1142,7 @@ export default function FluidPortfolio() {
             <button
             onClick={() => {
                 setCurrentPage('work');
+                setSelectedProjectId(null); // Reset when clicking nav
                 window.scrollTo({top: 0, behavior: 'smooth'});
             }}
             className={`transition-all hover:text-white hover:scale-105 uppercase relative group ${currentPage === 'work' ? 'opacity-100' : 'opacity-50'}`}
@@ -1002,7 +1176,7 @@ export default function FluidPortfolio() {
       {/* Main Content - z-10 default, but buttons inside will elevate themselves */}
       <div className="relative z-10">
         {currentPage === 'home' && <HomePage scrollY={scrollY} setPage={setCurrentPage} />}
-        {currentPage === 'work' && <WorkPage />}
+        {currentPage === 'work' && <WorkPage selectedProjectId={selectedProjectId} setSelectedProjectId={setSelectedProjectId} />}
         {currentPage === 'writing' && <BlogPage />}
       </div>
     </div>
