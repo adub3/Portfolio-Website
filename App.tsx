@@ -63,6 +63,7 @@ interface Project {
     type: string;
     stats: { label: string; value: string }[];
     role: string;
+    image?: string;
 }
 
 // --- DATA ---
@@ -76,12 +77,12 @@ const projects: Project[] = [
     year: "2025",
     month: "OCT",
     tags: ["Python", "TimeSeries", "ML", "Pandas"],
-    type: "Research",
-    role: "Quant Researcher",
+    type: "Research/Competition",
+    role: "Researcher",
     stats: [
         { label: "ROC AUC", value: "0.998" },
         { label: "Calibration", value: "+23%" },
-        { label: "Rank", value: "#1" }
+        { label: "Rank", value: "Top 3" }
     ]
   },
   {
@@ -94,6 +95,7 @@ const projects: Project[] = [
     tags: ["WebGL", "Physics", "React", "GLSL"],
     type: "Simulation",
     role: "Full Stack Engineer",
+    image: "./images/Test.png",
     stats: [
         { label: "Paths", value: "100k+" },
         { label: "FPS", value: "60" },
@@ -707,11 +709,21 @@ const WorkPage = ({
                             </p>
                         </div>
 
-                        {/* Visual Placeholder */}
-                        <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
-                             <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
-                             <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
-                        </div>
+                        {/* Visual Component */}
+                        {selectedProject.image ? (
+                            <div className="w-full h-auto bg-black border border-white/10 rounded-lg overflow-hidden">
+                                <img 
+                                    src={selectedProject.image} 
+                                    alt={selectedProject.title} 
+                                    className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
+                                />
+                            </div>
+                        ) : (
+                            <div className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-white/10 transition-colors cursor-default">
+                                <Layers size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                                <span className="font-mono text-white/30 text-sm">Interactive Visualization Component</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sidebar Stats */}
