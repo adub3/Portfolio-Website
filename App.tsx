@@ -74,7 +74,7 @@ const projects = [
   },
   {
     title: "Gas Price Forecasting",
-    description: "ARIMA-GARCH model for prediction markets. Competition winner. ROC AUC 0.998, 23% calibration improvement.",
+    description: "ARIMA-GARCH model for prediction markets. Competition Finalist. ROC AUC 0.998, 23% calibration improvement.",
     year: "2025",
     month: "JAN",
     tags: ["Python", "TimeSeries", "ML"],
@@ -92,49 +92,18 @@ const projects = [
 
 const posts: Post[] = [
   {
-    id: "stochastic",
-    title: "The Unreasonable Effectiveness of Stochastic Calculus",
-    excerpt: "Exploring why Ito integrals map so perfectly to market mechanics, and where the analogy breaks down in high-volatility regimes.",
-    date: "2025.02.14",
-    readTime: "8 min",
-    tag: "Math",
+    id: "portfolio-walkthrough",
+    title: "Inside This Portfolio",
+    excerpt: "A quick look at the tech stack and design decisions behind this website.",
+    date: "2025.12.08",
+    readTime: "2 min",
+    tag: "Website",
     content: [
-      { type: 'paragraph', text: "The mapping between heat diffusion and option pricing is one of the most beautiful coincidences in mathematical physics. When Black and Scholes derived their famous equation, they effectively treated money as a particle undergoing Brownian motion." },
-      { type: 'header', text: "The Diffusion Equation" },
-      { type: 'paragraph', text: "But why does this work? The central limit theorem does a lot of the heavy lifting. In a market with sufficient liquidity and independent actors, price movements tend to aggregate into normal distributions over logarithmic scales." },
-      { type: 'code', lang: 'python', code: `import numpy as np\n\ndef geometric_brownian_motion(S0, mu, sigma, T, dt):\n    N = int(T / dt)\n    t = np.linspace(0, T, N)\n    W = np.random.standard_normal(size=N)\n    W = np.cumsum(W) * np.sqrt(dt)\n    \n    # Ito's Lemma application\n    X = (mu - 0.5 * sigma**2) * t + sigma * W\n    return S0 * np.exp(X)` },
-      { type: 'paragraph', text: "However, the map is not the territory. In high-volatility regimes, the assumptions of continuous paths break down. We see jumps. We see heavy tails. The market behaves less like a diffusing particle and more like a turbulent flow." },
-      { type: 'image', caption: "Figure 1: Volatility clustering during the 2020 crash vs. Log-Normal prediction." },
-      { type: 'paragraph', text: "In this post, we'll implement a jump-diffusion model in Python and compare its calibration to standard Geometric Brownian Motion." }
-    ]
-  },
-  {
-    id: "react-perf",
-    title: "Optimizing React for High-Frequency Data",
-    excerpt: "Techniques for rendering 60fps visualizations without blocking the main thread. Using WebWorkers and OffscreenCanvas.",
-    date: "2025.01.20",
-    readTime: "12 min",
-    tag: "Engineering",
-    content: [
-      { type: 'paragraph', text: "React's reconciliation engine is a marvel of engineering, but it wasn't built for the firehose of data that comes from a real-time order book or a particle physics simulation." },
-      { type: 'header', text: "The Render Loop Problem" },
-      { type: 'paragraph', text: "When you're receiving 1000 updates per second, causing a re-render on every state change is a death sentence for your frame rate. The main thread chokes, scroll becomes jagged, and users leave." },
-      { type: 'code', lang: 'tsx', code: `// The naive approach (Do not do this)\nuseEffect(() => {\n  socket.on('price', (p) => setPrice(p)); // Triggers render\n}, []);\n\n// The performant approach\nuseFrame(() => {\n  // Direct mutation of the ref\n  meshRef.current.position.y = mutableState.price;\n});` },
-      { type: 'paragraph', text: "The solution? Bypass the virtual DOM for the heavy lifting. We can use a ref to hold mutable state and an animation loop to update a Canvas element directly." }
-    ]
-  },
-  {
-    id: "rust-sim",
-    title: "From Python to Rust: A Simulation Engine Story",
-    excerpt: "Rewriting my Monte Carlo solver. Dealing with the borrow checker, but gaining 40x performance in the process.",
-    date: "2024.12.05",
-    readTime: "15 min",
-    tag: "Systems",
-    content: [
-      { type: 'paragraph', text: "I love Python. It's the lingua franca of data science. But when I tried to scale my poker solver to millions of iterations, the GIL (Global Interpreter Lock) became my enemy." },
-      { type: 'paragraph', text: "Rust promised memory safety without garbage collection and C++ level speeds. It sounded too good to be true. The learning curve was vertical—fighting the borrow checker felt like arguing with a strict bureaucrat." },
-      { type: 'header', text: "Zero Cost Abstractions" },
-      { type: 'paragraph', text: "But once it clicked, the results were staggering. My Monte Carlo simulation went from 45 minutes in Python to just over 60 seconds in Rust. This speed difference isn't just about waiting less; it changes how you can iterate on your research." }
+      { type: 'paragraph', text: "This portfolio is built with React and Three.js, designed to be a clean, pretty way to display some of the work and ideas I explore. The 3D background effects (Dust Motes and Neural Network) are rendered using @react-three/fiber with the help of Gemini." },
+      { type: 'header', text: "The Data Structure" },
+      { type: 'paragraph', text: "All the content you see here, including this very post, is stored in a very simple JSON-like structure within the application code. This makes it easy to update and maintain without a super complex backend." },
+      { type: 'code', lang: 'typescript', code: `const posts: Post[] = [\n  {\n    id: "portfolio-walkthrough",\n    title: "Inside This Portfolio",\n    // ... content ...\n  }\n];` },
+      { type: 'paragraph', text: "Navigating between sections triggers smooth state transitions, with the 3D scene adapting to the context—calm particles for the home screen, and connected nodes for the writing section." }
     ]
   }
 ];
@@ -565,7 +534,7 @@ const HomePage = ({ scrollY, setPage }: { scrollY: number, setPage: (p: Page) =>
       >
         <div className="max-w-2xl text-right mix-blend-difference">
           <h2 className="text-5xl md:text-7xl font-bold mb-8 text-white tracking-tight">
-            Theory meets reality
+            Continuous Exploration
           </h2>
           <div className="w-full h-[1px] bg-white/30 mb-8 transform rotate-12 origin-right translate-y-4"></div>
           <p className="text-2xl md:text-3xl text-white/90 leading-relaxed font-serif italic mb-6">
@@ -648,10 +617,10 @@ const WorkPage = () => {
           
         <div className="mb-32 relative pl-4 md:pl-0">
             <h1 className="text-7xl md:text-[10rem] font-bold mb-8 tracking-tighter text-white z-10 relative leading-[0.8]">
-              Selected<br/><span className="text-white/30">Index</span>
+              Projects<br/>
             </h1>
             <p className="text-xl md:text-2xl text-white/60 max-w-xl font-light italic font-serif mt-12 border-l border-white/30 pl-6">
-              A collection of computational studies in optimization, stochastic dynamics, and machine learning architectures.
+              A collection of my personal projects which include some in optimization, stochastic dynamics, RL, and machine learning architectures.
             </p>
         </div>
 
@@ -832,10 +801,10 @@ const BlogPage = () => {
                 <>
                     <div className="mb-24">
                         <h1 className="text-7xl md:text-[9rem] font-bold mb-8 tracking-tighter text-white leading-[0.8]">
-                            Field<br/><span className="text-white/30">Notes</span>
+                            Blog<br/><span className="text-white/30">Posts</span>
                         </h1>
                         <p className="text-xl text-white/60 max-w-lg font-mono text-sm uppercase tracking-widest mt-8 border-t border-white/20 pt-4">
-                            Thoughts on simulation, systems programming, and model interpretability.
+                            Personal explorations into simulation, probability, and other ideas.
                         </p>
                     </div>
 
@@ -885,7 +854,7 @@ const BlogPage = () => {
                     </div>
                     
                     <div className="mt-32 text-center border-t border-white/10 pt-12">
-                        <p className="text-white/30 text-sm font-mono">End of Feed</p>
+                        <p className="text-white/30 text-sm font-mono"> Please do not reproduce any media without permission. </p>
                     </div>
                 </>
             )}
