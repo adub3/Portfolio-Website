@@ -93,8 +93,8 @@ const projects = [
 const posts: Post[] = [
   {
     id: "portfolio-walkthrough",
-    title: "Inside This Portfolio",
-    excerpt: "A quick look at the tech stack and design decisions behind this website.",
+    title: "First Post: Inside This Portfolio",
+    excerpt: "A quick look at the stack and design behind this website.",
     date: "2025.12.08",
     readTime: "2 min",
     tag: "Website",
@@ -690,7 +690,7 @@ const WorkPage = () => {
         </div>
         
           <div className="mt-48 py-20 border-t border-white text-center relative overflow-hidden">
-            <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">Visually Loud.<br/>Mathematically Quiet.</h3>
+            <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight text-white">More to come soon!</h3>
             <a href="mailto:anzwan@unc.edu" className="inline-block px-12 py-5 bg-white text-black font-bold text-lg hover:bg-neutral-300 transition-colors uppercase tracking-widest hover:scale-105 active:scale-95 duration-300">
               Contact Me
             </a>
