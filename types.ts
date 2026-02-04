@@ -3,18 +3,33 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React from 'react';
+export type Page = 'home' | 'work' | 'writing';
 
-export interface SectionProps {
-  id: string;
-  title: string;
-  children: React.ReactNode;
-  className?: string;
+export type ContentBlock = 
+  | { type: 'paragraph'; text: string }
+  | { type: 'header'; text: string }
+  | { type: 'code'; lang: string; code: string }
+  | { type: 'image'; caption: string };
+
+export interface Post {
+    id: string;
+    title: string;
+    excerpt: string;
+    date: string;
+    readTime: string;
+    tag: string;
+    content: ContentBlock[];
 }
 
-export interface Laureate {
-  name: string;
-  image: string; // placeholder url
-  role: string;
-  desc: string;
+export interface Project {
+    id: string;
+    title: string;
+    description: string;
+    longDescription: string;
+    year: string;
+    month: string;
+    tags: string[];
+    type: string;
+    stats: { label: string; value: string }[];
+    role: string;
 }
