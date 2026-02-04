@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
@@ -15,14 +15,21 @@
             fontFamily: {
               serif: ['"Playfair Display"', 'serif'],
               sans: ['"Inter"', 'sans-serif'],
+              mono: ['"Courier Prime"', 'monospace'],
             },
             animation: {
-                'fade-in': 'fadeIn 0.5s ease-out',
+                'fade-in': 'fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+                'draw': 'drawPath 1.5s cubic-bezier(0.7, 0, 0.3, 1) forwards',
+                'spin-slow': 'spin 12s linear infinite',
             },
             keyframes: {
                 fadeIn: {
-                    '0%': { opacity: '0', transform: 'translateY(10px)' },
+                    '0%': { opacity: '0', transform: 'translateY(40px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                drawPath: {
+                    '0%': { strokeDasharray: '0, 1000' },
+                    '100%': { strokeDasharray: '1000, 0' },
                 }
             }
           }
@@ -38,8 +45,17 @@
         background-color: #000;
         color: #fff;
       }
+      /* Utility for staggering */
+      .delay-100 { animation-delay: 100ms; }
+      .delay-200 { animation-delay: 200ms; }
+      .delay-300 { animation-delay: 300ms; }
+      .delay-500 { animation-delay: 500ms; }
+      .delay-700 { animation-delay: 700ms; }
+      .delay-1000 { animation-delay: 1000ms; }
+      .delay-1200 { animation-delay: 1200ms; }
+      .delay-1500 { animation-delay: 1500ms; }
     </style>
-  <script type="module" crossorigin src="/Portfolio-Website/assets/index-CrRStd5L.js"></script>
+  <script type="module" crossorigin src="/Portfolio-Website/assets/index-BaA_hSkS.js"></script>
 </head>
   <body>
     <div id="root"></div>
