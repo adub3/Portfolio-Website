@@ -76,9 +76,12 @@ const BlogPage = () => {
                                     case 'image':
                                         return (
                                             <figure key={idx} className="my-12">
-                                                <div className="w-full h-80 bg-[#1a1a1a] rounded-sm border border-white/10 flex items-center justify-center flex-col gap-4 group hover:border-white/20 transition-colors">
-                                                    <ImageIcon size={32} className="text-white/20" />
-                                                    <div className="text-white/20 font-mono text-xs">Image Placeholder</div>
+                                                <div className="w-full h-auto bg-[#1a1a1a] rounded-sm border border-white/10 overflow-hidden group hover:border-white/20 transition-colors">
+                                                    <img 
+                                                        src={block.src} 
+                                                        alt={block.caption}
+                                                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                                                    />
                                                 </div>
                                                 <figcaption className="mt-4 text-center text-sm font-mono text-white/40 italic">
                                                     {block.caption}

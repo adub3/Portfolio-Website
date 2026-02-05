@@ -9,7 +9,7 @@ export type ContentBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'header'; text: string }
   | { type: 'code'; lang: string; code: string }
-  | { type: 'image'; caption: string };
+  | { type: 'image'; src: string; caption: string };
 
 export interface Post {
     id: string;
@@ -32,4 +32,5 @@ export interface Project {
     type: string;
     stats: { label: string; value: string }[];
     role: string;
+    image?: string;
 }
