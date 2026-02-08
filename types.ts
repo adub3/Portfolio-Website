@@ -5,11 +5,46 @@
 
 export type Page = 'home' | 'work' | 'writing';
 
+export interface GraphPoint {
+    x: number;
+    y: number;
+    z?: number; 
+}
+
+export interface GraphSeries {
+    name: string;
+    color: string;
+    type?: 'line' | 'scatter' | '3d-scatter' | 'bar' | 'distribution' | 'pdf'; 
+    data: GraphPoint[];
+}
+
+export interface GraphData {
+    title: string;
+    xLabel: string;
+    yLabel: string;
+    zLabel?: string; 
+    type?: 'line' | 'scatter' | '3d-scatter' | 'bar' | 'distribution' | 'pdf';
+    csv?: string; 
+    csvUrl?: string; 
+    series: GraphSeries[];
+}
+
+export interface TableData {
+    headers: string[];
+    rows: string[][];
+    caption?: string;
+}
+
 export type ContentBlock = 
   | { type: 'paragraph'; text: string }
   | { type: 'header'; text: string }
   | { type: 'code'; lang: string; code: string }
-  | { type: 'image'; src: string; caption: string };
+  | { type: 'image'; src?: string; caption: string }
+  | { type: 'graph'; data: GraphData }
+  | { type: 'table'; data: TableData }
+  | { type: 'component'; component: any; caption?: string }
+  | { type: 'iframe'; src: string; height?: string; caption?: string }
+  | { type: 'html'; html: string; caption?: string };
 
 export interface Post {
     id: string;

@@ -1,13 +1,31 @@
+
 html {
   scroll-behavior: smooth;
-  background-color: #000;
+  background-color: rgb(var(--bg-rgb));
   cursor: none !important;
 }
 
 body {
-  background-color: #000;
-  color: #fff;
+  background-color: rgb(var(--bg-rgb));
+  color: rgb(var(--text-rgb));
   cursor: none !important;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+:root {
+    /* Dark Mode (Default) */
+    --bg-rgb: 10 10 10;
+    --text-rgb: 255 255 255;
+    --border-rgb: 255 255 255;
+    --surface-rgb: 255 255 255;
+}
+
+:root[data-theme='light'] {
+    /* Light Mode */
+    --bg-rgb: 255 255 255;
+    --text-rgb: 0 0 0;
+    --border-rgb: 0 0 0;
+    --surface-rgb: 0 0 0;
 }
 
 /* Force hide cursor on all interactive elements */
