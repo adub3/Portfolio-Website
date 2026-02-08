@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -29,27 +30,17 @@ const generateBinomial = (n: number, p: number) => {
     return data;
 };
 
-const generateDiscreteFreq = (counts: number[]) => {
-    return counts.map((v, i) => ({ x: i, y: v }));
-};
-
 const generateWalk = (steps: number, start: number, vol: number, drift: number, jumpProb: number = 0) => {
     const data = [];
     let current = start;
     for (let i = 0; i < steps; i++) {
         data.push({ x: i, y: current });
         let change = drift + (Math.random() - 0.5) * vol;
-        if (Math.random() < jumpProb) change -= vol * 3;
+        if (Math.random() < jumpProb) {
+            // Significant jump
+            change -= vol * (2 + Math.random() * 3);
+        }
         current += change;
-    }
-    return data;
-};
-
-const generateSineWave = (points: number, frequency: number, phase: number, amplitude: number) => {
-    const data = [];
-    for (let i = 0; i <= points; i++) {
-        const x = (i / points) * 4 * Math.PI;
-        data.push({ x: i, y: Math.sin(x * frequency + phase) * amplitude });
     }
     return data;
 };
@@ -69,8 +60,8 @@ const generateCluster = (count: number, centerX: number, centerY: number, spread
 // --- DATA INSTANCES ---
 
 const steps = 60;
-const lineDataA = generateWalk(steps, 50, 4, 0.1);
-const lineDataB = generateWalk(steps, 40, 2, 0.2);
+const gbmData = generateWalk(steps, 50, 4, 0.1, 0);
+const jumpData = generateWalk(steps, 50, 4, 0.1, 0.05);
 const normalData = generateGaussian(0, 1, 100);
 const normalWide = generateGaussian(0, 2, 100);
 const binomialN20 = generateBinomial(20, 0.5);
@@ -157,6 +148,47 @@ export const projects: Project[] = [
 
 export const posts: Post[] = [
   {
+    id: "stochastic",
+    title: "The Unreasonable Effectiveness of Stochastic Calculus",
+    excerpt: "Exploring why Ito integrals map so perfectly to market mechanics, and where the analogy breaks down in high-volatility regimes.",
+    date: "2025.02.14",
+    readTime: "8 min",
+    tag: "Math",
+    content: [
+      { type: 'paragraph', text: "The mapping between heat diffusion and option pricing is one of the most beautiful coincidences in mathematical physics. When Black and Scholes derived their famous equation, they effectively treated money as a particle undergoing Brownian motion." },
+      { type: 'header', text: "The Diffusion Equation" },
+      { type: 'paragraph', text: "But why does this work? The central limit theorem does a lot of the heavy lifting. In a market with sufficient liquidity and independent actors, price movements tend to aggregate into normal distributions over logarithmic scales." },
+      { 
+          type: 'graph', 
+          data: {
+              title: "Geometric Brownian Motion Simulation",
+              xLabel: "Time Steps",
+              yLabel: "Price Level",
+              type: "line",
+              series: [
+                  { name: "GBM Path", color: "#3b82f6", data: gbmData }
+              ]
+          }
+      },
+      { type: 'code', lang: 'python', code: `import numpy as np\n\ndef geometric_brownian_motion(S0, mu, sigma, T, dt):\n    N = int(T / dt)\n    t = np.linspace(0, T, N)\n    W = np.random.standard_normal(size=N)\n    W = np.cumsum(W) * np.sqrt(dt)\n    \n    # Ito's Lemma application\n    X = (mu - 0.5 * sigma**2) * t + sigma * W\n    return S0 * np.exp(X)` },
+      { type: 'paragraph', text: "However, the map is not the territory. In high-volatility regimes, the assumptions of continuous paths break down. We see jumps. We see heavy tails. The market behaves less like a diffusing particle and more like a turbulent flow." },
+      { 
+          type: 'graph', 
+          data: {
+              title: "Jump-Diffusion vs. Continuous GBM",
+              xLabel: "Time Steps",
+              yLabel: "Price Level",
+              type: "line",
+              series: [
+                  { name: "Standard GBM", color: "#3b82f6", data: gbmData },
+                  { name: "Jump-Diffusion", color: "#ef4444", data: jumpData }
+              ]
+          }
+      },
+      { type: 'paragraph', text: "In this post, we've implemented a jump-diffusion model and compared its calibration to standard Geometric Brownian Motion. The presence of jumps (Poisson-distributed arrival) creates the fat-tailed distributions we observe in real-world data." }
+    ]
+  },
+  {
     id: "master-viz",
     title: "The Comprehensive Visualization Engine",
     excerpt: "Exploring the full spectrum of our custom charting toolkit: from 3D manifolds to discrete probability mass functions.",     
@@ -222,8 +254,8 @@ export const posts: Post[] = [
                 yLabel: "Normalized Value",
                 type: "line",
                 series: [
-                    { name: "Process Alpha", color: "#ef4444", data: lineDataA },
-                    { name: "Process Beta", color: "#3b82f6", data: lineDataB }
+                    { name: "Process Alpha", color: "#ef4444", data: gbmData },
+                    { name: "Process Beta", color: "#3b82f6", data: jumpData }
                 ]
             }
         },
@@ -258,59 +290,6 @@ export const posts: Post[] = [
             }
         }
     ]
-  },
-  {
-      id: "prob-geometry",
-      title: "The Geometry of Probability",
-      excerpt: "Visualizing mass vs density. Comparing the visual metaphors of smooth PDFs and discrete PMFs.",
-      date: "2025.03.25",
-      readTime: "5 min",
-      tag: "Statistics",
-      content: [
-          { type: 'paragraph', text: "In probability theory, the way we visualize a distribution tells us everything about the nature of the space we are working in. For discrete variables, we use mass. For continuous ones, we use density." },
-          { type: 'header', text: "Continuous Density (PDF)" },
-          { type: 'paragraph', text: "The Probability Density Function (PDF) describes the relative likelihood for a random variable to take on a given value. The absolute probability of a single point is zero; instead, we measure the area under the curve between two points." },
-          { 
-              type: 'graph', 
-              data: {
-                  title: "Standard Normal Distribution",
-                  xLabel: "Standard Deviations (σ)",
-                  yLabel: "Density f(x)",
-                  type: "pdf",
-                  series: [
-                      { name: "Gaussian (μ=0, σ=1)", color: "#3b82f6", data: normalData }
-                  ]
-              }
-          },
-          { type: 'header', text: "Discrete Mass (PMF)" },
-          { type: 'paragraph', text: "In contrast, the Probability Mass Function (PMF) gives the probability that a discrete random variable is exactly equal to some value." },
-          { 
-              type: 'graph', 
-              data: {
-                  title: "Binomial Mass Function",
-                  xLabel: "Successes (k)",
-                  yLabel: "P(X=k)",
-                  type: "distribution",
-                  series: [
-                      { name: "Fair Coin (n=20, p=0.5)", color: "#10b981", data: binomialN20 }
-                  ]
-              }
-          },
-          { type: 'header', text: "Comparison Summary" },
-          {
-            type: 'table',
-            data: {
-                headers: ["Property", "Discrete (PMF)", "Continuous (PDF)"],
-                rows: [
-                    ["Definition", "P(X = x)", "f(x)"],
-                    ["Point Prob", "Non-zero", "Zero"],
-                    ["Summation", "Sigma (Σ)", "Integral (∫)"],
-                    ["Normalization", "Σ P(x) = 1", "∫ f(x) dx = 1"]
-                ],
-                caption: "Table 1: Fundamental differences between probability mass and density."
-            }
-          }
-      ]
   },
   {
     id: "portfolio-walkthrough",
