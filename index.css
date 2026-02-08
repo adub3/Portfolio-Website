@@ -1,0 +1,44 @@
+
+html {
+  scroll-behavior: smooth;
+  background-color: rgb(var(--bg-rgb));
+  cursor: none !important;
+}
+
+body {
+  background-color: rgb(var(--bg-rgb));
+  color: rgb(var(--text-rgb));
+  cursor: none !important;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+:root {
+    /* Dark Mode (Default) */
+    --bg-rgb: 10 10 10;
+    --text-rgb: 255 255 255;
+    --border-rgb: 255 255 255;
+    --surface-rgb: 255 255 255;
+}
+
+:root[data-theme='light'] {
+    /* Light Mode */
+    --bg-rgb: 255 255 255;
+    --text-rgb: 0 0 0;
+    --border-rgb: 0 0 0;
+    --surface-rgb: 0 0 0;
+}
+
+/* Force hide cursor on all interactive elements */
+a, button, [role="button"], input, textarea, select {
+  cursor: none !important;
+}
+
+/* Utility for staggering */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-1000 { animation-delay: 1000ms; }
+.delay-1200 { animation-delay: 1200ms; }
+.delay-1500 { animation-delay: 1500ms; }
