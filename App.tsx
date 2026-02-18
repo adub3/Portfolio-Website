@@ -9,7 +9,7 @@ import { Canvas } from '@react-three/fiber';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Page } from './types';
-import { StarField, NeuralNetworkEffect, LorenzAttractor, ShootingStarEffect } from './Visuals';
+import { StarField, NeuralNetworkEffect, LorenzAttractor, AuroraBorealis } from './Visuals';
 import HomePage from './Home';
 import WorkPage from './Work';
 import BlogPage from './Writing';
@@ -247,45 +247,51 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
 const TransitionOverlay = ({ stage, label, direction }: { stage: 'idle' | 'start' | 'middle' | 'end'; label: string; direction: 'left' | 'right'; }) => {
   const [displayedText, setDisplayedText] = useState("");
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    let intervalId: ReturnType<typeof setInterval>;
     if (stage === 'middle') {
-        setDisplayedText("");
-        timeoutId = setTimeout(() => {
+        const timeoutId = setTimeout(() => {
             const textToType = label.toUpperCase();
             let charIndex = 0;
-            intervalId = setInterval(() => {
-                if (charIndex <= textToType.length) { setDisplayedText(textToType.slice(0, charIndex)); charIndex++; } 
-                else clearInterval(intervalId);
-            }, 60); 
-        }, 300);
-    } else if (stage === 'idle' || stage === 'start') setDisplayedText("");
-    return () => { clearTimeout(timeoutId); clearInterval(intervalId); };
+            setDisplayedText("");
+            const intervalId = setInterval(() => {
+                if (charIndex <= textToType.length) { 
+                    setDisplayedText(textToType.slice(0, charIndex)); 
+                    charIndex++; 
+                } else {
+                    clearInterval(intervalId);
+                }
+            }, 50); 
+            return () => clearInterval(intervalId);
+        }, 200);
+        return () => clearTimeout(timeoutId);
+    } else {
+        setDisplayedText("");
+    }
   }, [stage, label]);
+
   if (stage === 'idle') return null;
-  const isRight = direction === 'right';
-  const animVariants = {
+
+  const isRight = direction === 'right'; 
+  const variants = {
       initial: { x: isRight ? '100%' : '-100%' },
-      enter: { x: '0%', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } },
-      exit: { x: isRight ? '-100%' : '100%', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } }
+      enter: { x: '0%', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
+      exit: { x: isRight ? '-100%' : '100%', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
   };
+
   let animate = "initial";
   if (stage === 'middle') animate = "enter";
   if (stage === 'end') animate = "exit";
+
   return (
-    <div className="fixed inset-0 z-[120] pointer-events-none flex flex-row items-stretch overflow-hidden">
+    <div className="fixed inset-0 z-[200] pointer-events-none flex flex-row items-stretch overflow-hidden">
         <motion.div 
           initial="initial" 
           animate={animate} 
-          variants={animVariants} 
-          className={`absolute inset-0 bg-theme-bg z-[100] flex items-center justify-center ${stage === 'end' ? 'pointer-events-none' : 'pointer-events-auto'}`}
+          variants={variants} 
+          className="relative w-full h-full bg-theme-bg flex items-center justify-center pointer-events-auto"
         >
-            <svg className={`absolute w-[15vh] h-[120%] text-theme-bg fill-current transform ${isRight ? '-left-[14.5vh] rotate-180' : '-right-[14.5vh]'}`} viewBox="0 0 100 100" preserveAspectRatio="none" style={{ writingMode: 'vertical-lr' }}>
-                <path d="M0,0 C30,20 30,80 0,100 L100,100 L100,0 Z"></path>
-            </svg>
             <div className="relative z-10 overflow-hidden flex items-baseline">
-                <h2 className="text-4xl md:text-7xl font-bold text-theme-text tracking-tighter uppercase font-sans min-h-[1.2em]">
-                {displayedText}<span className="animate-pulse text-theme-text/50 ml-1">_</span>
+                <h2 className="text-4xl md:text-9xl font-bold text-theme-text tracking-tighter uppercase font-sans min-h-[1.2em]">
+                    {displayedText}<span className="animate-pulse text-theme-text/50 ml-1">_</span>
                 </h2>
             </div>
         </motion.div>
@@ -304,7 +310,6 @@ export default function FluidPortfolio() {
   const [isGraphExpanded, setIsGraphExpanded] = useState(false);
   const [introFinished, setIntroFinished] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [shootingStarTarget, setShootingStarTarget] = useState<{x: number, y: number, id: number} | null>(null);
   
   // Transition State
   const [transitionStage, setTransitionStage] = useState<'idle' | 'start' | 'middle' | 'end'>('idle');
@@ -352,42 +357,38 @@ export default function FluidPortfolio() {
       setIsMenuOpen(false);
       setTransitionLabel(newPage);
       
+      // Phase 1: Mount component in 'start' position (off-screen)
       setTransitionStage('start');
       
+      // Phase 2: Animate to 'middle' (on-screen)
+      // Use requestAnimationFrame to ensure the 'start' state is registered before animating to 'middle'
+      requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+              setTransitionStage('middle');
+          });
+      });
+      
+      // Schedule Phase 3
       setTimeout(() => {
-          setTransitionStage('middle');
+          // Perform state updates while hidden
+          setCurrentPage(newPage);
+          setSelectedProjectId(null); 
+          setSelectedPostId(null);
+          setIsGraphExpanded(false);
+          window.scrollTo(0, 0);
+
+          // Phase 3: Animate to 'end' (exit to other side)
+          setTransitionStage('end');
+          
+          // Cleanup
           setTimeout(() => {
-            setCurrentPage(newPage);
-            setSelectedProjectId(null); 
-            setSelectedPostId(null);
-            setIsGraphExpanded(false);
-            window.scrollTo(0, 0);
-            setTransitionStage('end');
-            setTimeout(() => {
               setTransitionStage('idle');
-            }, 850);
-          }, 1200);
-      }, 50);
+          }, 850); // Matches exit duration
+      }, 1200); // Wait for enter + idle time
   };
 
   const toggleTheme = () => {
       setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
-
-  const handlePointerDown = (e: React.PointerEvent) => {
-      const target = e.target as HTMLElement;
-      // Avoid triggering when interacting with specific interactive elements
-      // But allow triggering on the general background even if it's "interactive"
-      if (target.closest('button') || target.closest('a') || target.closest('input')) {
-          return;
-      }
-      
-      // Calculate Normalized Device Coordinates (NDC)
-      // x: -1 to 1, y: -1 to 1
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      
-      setShootingStarTarget({ x, y, id: Date.now() });
   };
 
   let canvasOpacity = 1;
@@ -409,6 +410,13 @@ export default function FluidPortfolio() {
       }
   }
 
+  // Explicit opacity calculation for Aurora component on Home page
+  let auroraOpacity = 1;
+  if (currentPage === 'home' && typeof window !== 'undefined') {
+      // Fade starts at 0, ends at 1.2 * viewport height
+      auroraOpacity = Math.max(0, 1 - scrollY / (window.innerHeight * 1.2));
+  }
+
   useEffect(() => {
     if (isOverlayActive) {
       document.body.style.overflow = 'hidden';
@@ -420,7 +428,6 @@ export default function FluidPortfolio() {
   return (
     <div 
         className="bg-theme-bg text-theme-text min-h-screen selection:bg-theme-text selection:text-theme-bg font-sans cursor-none relative transition-colors duration-500"
-        onPointerDown={handlePointerDown}
     >
         <CustomCursor />
         {!introFinished && <IntroOverlay onComplete={() => setIntroFinished(true)} />}
@@ -444,8 +451,14 @@ export default function FluidPortfolio() {
             >
                 {!isDetailedView && (
                     <group key={currentPage}>
-                        {currentPage === 'writing' ? <NeuralNetworkEffect theme={theme} /> : (currentPage === 'work' ? <LorenzAttractor theme={theme} /> : <StarField theme={theme} />)}
-                        <ShootingStarEffect target={shootingStarTarget} theme={theme} />
+                        {currentPage === 'home' && (
+                            <>
+                                <StarField theme={theme} />
+                                <AuroraBorealis theme={theme} opacity={auroraOpacity} />
+                            </>
+                        )}
+                        {currentPage === 'writing' && <NeuralNetworkEffect theme={theme} />}
+                        {currentPage === 'work' && <LorenzAttractor theme={theme} />}
                     </group>
                 )}
             </Canvas>
@@ -485,7 +498,7 @@ export default function FluidPortfolio() {
 
         <main className="relative z-10 w-full pointer-events-none">
             <div className="pointer-events-auto">
-                {currentPage === 'home' && <HomePage scrollY={scrollY} setPage={handlePageChange} startAnimations={introFinished} />}
+                {currentPage === 'home' && <HomePage scrollY={scrollY} setPage={handlePageChange} startAnimations={introFinished} theme={theme} />}
                 {currentPage === 'work' && <WorkPage selectedProjectId={selectedProjectId} setSelectedProjectId={setSelectedProjectId} onGraphExpand={setIsGraphExpanded} />}
                 {currentPage === 'writing' && <BlogPage onPostSelect={setSelectedPostId} onGraphExpand={setIsGraphExpanded} theme={theme} />}
             </div>

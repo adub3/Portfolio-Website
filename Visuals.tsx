@@ -12,14 +12,18 @@ import * as THREE from 'three';
 export const StarField = ({ theme }: { theme: 'light' | 'dark' }) => {
   const count = 2000;
   const mesh = useRef<THREE.Points>(null);
+  
+  // Light mode: Slate 600 (#475569) instead of pure black for better aesthetics
+  const colorVal = theme === 'dark' ? '#ffffff' : '#475569';
+  
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uColor: { value: new THREE.Color(theme === 'dark' ? '#ffffff' : '#000000') },
+    uColor: { value: new THREE.Color(colorVal) },
   }), []);
 
   useEffect(() => {
-    uniforms.uColor.value.set(theme === 'dark' ? '#ffffff' : '#000000');
-  }, [theme, uniforms]);
+    uniforms.uColor.value.set(colorVal);
+  }, [theme, uniforms, colorVal]);
 
   const [positions, sizes, shifts] = useMemo(() => {
     const p = new Float32Array(count * 3);
@@ -90,13 +94,14 @@ export const NeuralNetworkEffect = ({ theme }: { theme: 'light' | 'dark' }) => {
   const count = 60;
   const radius = 10; 
   
-  const colorBlue = useMemo(() => new THREE.Color('#1d4ed8'), []);
-  const colorGreen = useMemo(() => new THREE.Color('#10b981'), []);
+  // Enhanced colors for Light Mode to be "brighter" and more colorful
+  const colorBlue = useMemo(() => new THREE.Color(theme === 'dark' ? '#1d4ed8' : '#3b82f6'), [theme]);
+  const colorGreen = useMemo(() => new THREE.Color(theme === 'dark' ? '#10b981' : '#059669'), [theme]);
   const colorRed = useMemo(() => new THREE.Color('#ef4444'), []);
   const tempColor = useMemo(() => new THREE.Color(), []);
   
-  // Dynamic base color based on theme
-  const colorBase = useMemo(() => new THREE.Color(theme === 'dark' ? '#ffffff' : '#000000'), [theme]);
+  // Dynamic base color: White in Dark Mode, Violet (#8b5cf6) in Light Mode to add vibrancy
+  const colorBase = useMemo(() => new THREE.Color(theme === 'dark' ? '#ffffff' : '#8b5cf6'), [theme]);
 
   const particles = useMemo(() => {
     const data = new Float32Array(count * 8);
@@ -125,12 +130,9 @@ export const NeuralNetworkEffect = ({ theme }: { theme: 'light' | 'dark' }) => {
   const pointColors = useMemo(() => new Float32Array(count * 3), []);
   const pointOpacities = useMemo(() => new Float32Array(count), []);
   
-  // Variable sizes for points with distribution biased towards smaller sizes
   const pointSizes = useMemo(() => {
       const arr = new Float32Array(count);
       for(let i = 0; i < count; i++) {
-          // Range 10 to 40.
-          // Using power of 3 biases heavily towards the lower end (smaller nodes appear more often)
           arr[i] = 10.0 + Math.pow(Math.random(), 3.0) * 30.0;
       }
       return arr;
@@ -366,7 +368,9 @@ export const LorenzAttractor = ({ theme }: { theme: 'light' | 'dark' }) => {
     const groupRef = useRef<THREE.Group>(null);
     const tempColor = useMemo(() => new THREE.Color(), []);
     const colorSlow = useMemo(() => new THREE.Color('#1d4ed8'), []);
-    const colorFast = useMemo(() => new THREE.Color(theme === 'dark' ? '#ffffff' : '#000000'), [theme]);
+    
+    // In light mode, accelerate to a vibrant Pink (#db2777) instead of Black for visual flair
+    const colorFast = useMemo(() => new THREE.Color(theme === 'dark' ? '#ffffff' : '#db2777'), [theme]);
     
     // Zoom factor for visuals
     const ZOOM = 0.35;
@@ -396,8 +400,8 @@ export const LorenzAttractor = ({ theme }: { theme: 'light' | 'dark' }) => {
         if (!groupRef.current) return;
         groupRef.current.rotation.y += 0.001;
         
-        // Update fast color reference in loop if theme changed, though better to do outside
-        colorFast.set(theme === 'dark' ? '#ffffff' : '#000000');
+        // Update fast color reference in loop (though optimized to only change on theme)
+        colorFast.set(theme === 'dark' ? '#ffffff' : '#db2777');
 
         trajectories.forEach((traj, i) => {
             let { x, y, z } = traj.current;
@@ -441,183 +445,133 @@ export const LorenzAttractor = ({ theme }: { theme: 'light' | 'dark' }) => {
     );
 };
 
-// 4. Shooting Star Effect (Particle Trail)
-export const ShootingStarEffect = ({ target, theme }: { target: {x: number, y: number, id: number} | null; theme: 'light' | 'dark' }) => {
-  const { camera } = useThree();
-  
-  const STAR_POOL_SIZE = 5;
-  const PARTICLE_COUNT = 4000;
-  const EMISSION_RATE = 8; 
-  
-  // Active Stars Logic
-  const stars = useRef<{
-    active: boolean;
-    startTime: number;
-    startPos: THREE.Vector3;
-    endPos: THREE.Vector3;
-    duration: number;
-  }[]>([]);
+// 4. Aurora Borealis - Realistic Shader Effect
+export const AuroraBorealis = ({ theme, opacity = 1 }: { theme: 'light' | 'dark', opacity?: number }) => {
+    const mesh = useRef<THREE.Mesh>(null);
+    const { camera, viewport } = useThree();
 
-  useMemo(() => {
-    stars.current = Array.from({ length: STAR_POOL_SIZE }, () => ({
-      active: false,
-      startTime: 0,
-      startPos: new THREE.Vector3(),
-      endPos: new THREE.Vector3(),
-      duration: 1,
-    }));
-  }, []);
-
-  // Particle System
-  const pointsRef = useRef<THREE.Points>(null);
-  const particleSystem = useMemo(() => {
-    return {
-        positions: new Float32Array(PARTICLE_COUNT * 3),
-        velocities: new Float32Array(PARTICLE_COUNT * 3),
-        ages: new Float32Array(PARTICLE_COUNT).fill(1), // Init dead
-        lifetimes: new Float32Array(PARTICLE_COUNT),
-        sizes: new Float32Array(PARTICLE_COUNT),
-        cursor: 0
-    };
-  }, []);
-
-  // Trigger Logic
-  useEffect(() => {
-    if (!target) return;
+    // Dynamically calculate the scale needed to cover the viewport at the mesh's depth.
+    // Camera default pos is [0,0,5]. Mesh is at [0,0,-10].
+    // Distance from camera = 15.
+    const meshZ = -10;
     
-    const idx = stars.current.findIndex(s => !s.active);
-    if (idx !== -1) {
-      const s = stars.current[idx];
-      s.active = true;
-      s.startTime = performance.now() / 1000;
-      s.duration = 2.5 + Math.random() * 2.0; // Slow speed: 2.5s - 4.5s duration
+    // Calculate the visible width/height at the mesh's Z-depth.
+    const depth = Math.abs(camera.position.z - meshZ);
+    // @ts-ignore - Fov exists on PerspectiveCamera
+    const vFov = (camera.fov * Math.PI) / 180;
+    const height = 2 * Math.tan(vFov / 2) * depth;
+    const aspect = viewport.width / viewport.height;
+    const width = height * aspect;
 
-      const Z_DEPTH = -5;
-      const vec = new THREE.Vector3(target.x, target.y, 0.5);
-      vec.unproject(camera);
-      vec.sub(camera.position).normalize();
-      const distance = (Z_DEPTH - camera.position.z) / vec.z;
-      const hitPoint = camera.position.clone().add(vec.multiplyScalar(distance));
-      
-      const angle = Math.random() * Math.PI * 2;
-      const dirX = Math.cos(angle);
-      const dirY = Math.sin(angle);
-      const pathLength = 50;
-      
-      s.startPos.set(hitPoint.x - dirX * (pathLength/2), hitPoint.y - dirY * (pathLength/2), Z_DEPTH);
-      s.endPos.set(hitPoint.x + dirX * (pathLength/2), hitPoint.y + dirY * (pathLength/2), Z_DEPTH);
-    }
-  }, [target, camera]);
+    const uniforms = useMemo(() => ({
+        uTime: { value: 0 },
+        uOpacity: { value: 1 },
+        // Lighter, more subtle base colors to blend with stars better
+        uColor1: { value: new THREE.Color(theme === 'dark' ? '#000000' : '#ffffff') }, 
+        uColor2: { value: new THREE.Color(theme === 'dark' ? '#059669' : '#059669') }, 
+        uColor3: { value: new THREE.Color(theme === 'dark' ? '#7c3aed' : '#7c3aed') }, 
+        uColor4: { value: new THREE.Color(theme === 'dark' ? '#2563eb' : '#2563eb') }, 
+    }), []);
 
-  useFrame((state, delta) => {
-    const time = state.clock.elapsedTime;
-    const ps = particleSystem;
-    
-    // 1. Update Active Stars & Emit
-    stars.current.forEach(s => {
-        if (!s.active) return;
-        const age = time - s.startTime;
-        const progress = age / s.duration;
-        
-        if (progress >= 1) {
-            s.active = false;
-            return;
+    useEffect(() => {
+        uniforms.uColor1.value.set(theme === 'dark' ? '#000000' : '#ffffff');
+        uniforms.uColor2.value.set(theme === 'dark' ? '#059669' : '#10b981');
+        uniforms.uColor3.value.set(theme === 'dark' ? '#7c3aed' : '#8b5cf6');
+        uniforms.uColor4.value.set(theme === 'dark' ? '#2563eb' : '#3b82f6');
+    }, [theme, uniforms]);
+
+    useEffect(() => {
+        if (mesh.current) {
+             (mesh.current.material as THREE.ShaderMaterial).uniforms.uOpacity.value = opacity;
         }
+    }, [opacity]);
 
-        const currentPos = new THREE.Vector3().lerpVectors(s.startPos, s.endPos, progress);
-
-        for(let i=0; i<EMISSION_RATE; i++) {
-            const idx = ps.cursor;
-            ps.cursor = (ps.cursor + 1) % PARTICLE_COUNT;
-            
-            // Spawn at head with slight spread
-            ps.positions[idx*3] = currentPos.x + (Math.random()-0.5) * 0.15;
-            ps.positions[idx*3+1] = currentPos.y + (Math.random()-0.5) * 0.15;
-            ps.positions[idx*3+2] = currentPos.z + (Math.random()-0.5) * 0.15;
-            
-            // Velocity: Drift perpendicular to motion or random
-            ps.velocities[idx*3] = (Math.random()-0.5) * 0.05;
-            ps.velocities[idx*3+1] = (Math.random()-0.5) * 0.05;
-            ps.velocities[idx*3+2] = (Math.random()-0.5) * 0.05;
-            
-            ps.ages[idx] = 0;
-            ps.lifetimes[idx] = 0.5 + Math.random() * 1.5; // Random lifetime
-            ps.sizes[idx] = Math.random();
+    useFrame((state) => {
+        if (mesh.current) {
+            (mesh.current.material as THREE.ShaderMaterial).uniforms.uTime.value = state.clock.elapsedTime * 0.2;
         }
     });
 
-    // 2. Update Particles
-    for(let i=0; i<PARTICLE_COUNT; i++) {
-        if (ps.ages[i] >= 1) continue;
-        
-        ps.ages[i] += delta * (1.0 / ps.lifetimes[i]); 
-        
-        if (ps.ages[i] >= 1) {
-            ps.ages[i] = 1;
-        } else {
-            ps.positions[i*3] += ps.velocities[i*3];
-            ps.positions[i*3+1] += ps.velocities[i*3+1];
-            ps.positions[i*3+2] += ps.velocities[i*3+2];
-        }
-    }
-
-    // 3. Update Geometry Attributes
-    if (pointsRef.current) {
-        pointsRef.current.geometry.attributes.position.needsUpdate = true;
-        pointsRef.current.geometry.attributes.aAge.needsUpdate = true;
-    }
-  });
-
-  const colorUniform = useMemo(() => new THREE.Vector3(), []);
-  useEffect(() => {
-      const c = new THREE.Color(theme === 'dark' ? '#ffffff' : '#000000');
-      colorUniform.set(c.r, c.g, c.b);
-  }, [theme]);
-
-  return (
-      <points ref={pointsRef}>
-          <bufferGeometry>
-              <bufferAttribute attach="attributes-position" count={PARTICLE_COUNT} array={particleSystem.positions} itemSize={3} />
-              <bufferAttribute attach="attributes-aAge" count={PARTICLE_COUNT} array={particleSystem.ages} itemSize={1} />
-              <bufferAttribute attach="attributes-aSize" count={PARTICLE_COUNT} array={particleSystem.sizes} itemSize={1} />
-          </bufferGeometry>
-          <shaderMaterial
-            transparent
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-            uniforms={{ uColor: { value: colorUniform } }}
-            vertexShader={`
-                uniform vec3 uColor;
-                attribute float aAge;
-                attribute float aSize;
-                varying float vAlpha;
-                void main() {
-                    if (aAge >= 1.0) {
-                        gl_Position = vec4(0.0);
-                        return;
+    return (
+        <mesh ref={mesh} position={[0, 0, meshZ]} scale={[width * 1.5, height * 1.5, 1]}>
+            <planeGeometry args={[1, 1, 128, 128]} />
+            <shaderMaterial
+                uniforms={uniforms}
+                transparent
+                depthWrite={false}
+                blending={THREE.AdditiveBlending}
+                vertexShader={`
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                     }
-                    vAlpha = 1.0 - aAge; 
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = (4.0 * aSize + 3.0) * (10.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `}
-            fragmentShader={`
-                uniform vec3 uColor;
-                varying float vAlpha;
-                void main() {
-                    if (vAlpha <= 0.01) discard;
-                    vec2 coord = gl_PointCoord - vec2(0.5);
-                    float dist = length(coord);
-                    if (dist > 0.5) discard;
-                    
-                    float strength = 1.0 - (dist * 2.0);
-                    strength = pow(strength, 2.0);
-                    
-                    gl_FragColor = vec4(uColor, vAlpha * strength);
-                }
-            `}
-          />
-      </points>
-  );
+                `}
+                fragmentShader={`
+                    uniform float uTime;
+                    uniform float uOpacity;
+                    uniform vec3 uColor1;
+                    uniform vec3 uColor2;
+                    uniform vec3 uColor3;
+                    uniform vec3 uColor4;
+                    varying vec2 vUv;
+
+                    // Simplex 2D noise
+                    vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+                    float snoise(vec2 v){
+                        const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+                        vec2 i  = floor(v + dot(v, C.yy) );
+                        vec2 x0 = v -   i + dot(i, C.xx);
+                        vec2 i1;
+                        i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                        vec4 x12 = x0.xyxy + C.xxzz;
+                        x12.xy -= i1;
+                        i = mod(i, 289.0);
+                        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+                        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                        m = m*m ;
+                        m = m*m ;
+                        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                        vec3 h = abs(x) - 0.5;
+                        vec3 ox = floor(x + 0.5);
+                        vec3 a0 = x - ox;
+                        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                        vec3 g;
+                        g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                        return 130.0 * dot(m, g);
+                    }
+
+                    void main() {
+                        vec2 uv = vUv;
+                        
+                        // Coherent, singular vertical curtain (no blobs)
+                        
+                        // Layer 1: Base Shape (Slow, Tall)
+                        // Low Y frequency (0.2) = Long continuous vertical lines
+                        float n1 = snoise(vec2(uv.x * 2.5 + uTime * 0.05 + 100.0, uv.y * 0.2 - uTime * 0.02)); 
+                        
+                        // Layer 2: Texture (Medium)
+                        // Y frequency 0.5 still keeps it relatively vertical/connected
+                        float n2 = snoise(vec2(uv.x * 5.0 - uTime * 0.1 + 200.0, uv.y * 0.5 + uTime * 0.05));
+                        
+                        // Combine: mostly n1 for shape, n2 for detail
+                        float intensity = n1 * 0.7 + n2 * 0.3;
+                        
+                        // High Threshold: Cuts off background noise, isolating only the "peaks" (distinct curtains)
+                        float alpha = smoothstep(0.4, 0.6, intensity + 0.2);
+                        
+                        // Fade at edges
+                        alpha *= smoothstep(0.0, 0.2, uv.y) * smoothstep(1.0, 0.8, uv.y);
+                        
+                        // Color mixing based on noise
+                        vec3 color = mix(uColor2, uColor3, uv.x + n1 * 0.3);
+                        color = mix(color, uColor4, uv.y + n2 * 0.3);
+                        
+                        gl_FragColor = vec4(color, alpha * 0.45 * uOpacity); 
+                    }
+                `}
+            />
+        </mesh>
+    );
 };
