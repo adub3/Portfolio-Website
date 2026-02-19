@@ -102,8 +102,8 @@ const WorkPage = ({
                 exit="exit"
               >
                   <motion.div variants={headerVariants} className="mb-32">
-                      <h1 className="text-7xl md:text-[10rem] font-bold mb-8 tracking-tighter text-theme-text leading-[0.8]">Selected<br/><span className="text-theme-text/50">Index</span></h1>
-                      <p className="text-xl md:text-2xl text-theme-text max-w-xl font-light italic font-serif mt-12 border-l border-theme-border/30 pl-6">A collection of computational studies in optimization, stochastic dynamics, and machine learning architectures.</p>
+                      <h1 className="text-7xl md:text-[10rem] font-bold mb-8 tracking-tighter text-theme-text leading-[0.8]">Selected<br/><span className="text-theme-text/50">Projects</span></h1>
+                      <p className="text-xl md:text-2xl text-theme-text max-w-xl font-light italic font-serif mt-12 border-l border-theme-border/30 pl-6">Mapping the trajectory of my research in stochastic modeling, high-performance computing, and game-theoretic optimization.</p>
                   </motion.div>
                   <div className="space-y-12">
                   {projects.map((project, i) => (
