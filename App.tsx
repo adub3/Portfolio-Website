@@ -86,16 +86,6 @@ const CustomCursor = () => {
              const target = e.target as HTMLElement;
              const isClickable = target.closest('a, button, [role="button"], input, textarea, .cursor-pointer, .group');
              targetScale.current = isClickable ? 2.5 : 1;
-             
-             if (outerRef.current) {
-                 if (isClickable) {
-                     outerRef.current.classList.add('bg-white', 'border-transparent');
-                     outerRef.current.classList.remove('border-white');
-                 } else {
-                     outerRef.current.classList.remove('bg-white', 'border-transparent');
-                     outerRef.current.classList.add('border-white');
-                 }
-             }
         };
 
         window.addEventListener('mousemove', onMouseMove);
@@ -129,8 +119,8 @@ const CustomCursor = () => {
 
     return (
         <>
-            <div ref={outerRef} className="fixed top-0 left-0 w-8 h-8 border border-white rounded-full pointer-events-none z-[9999] mix-blend-difference opacity-0 transition-opacity duration-300 will-change-transform"></div>
-            <div ref={innerRef} className="fixed top-0 left-0 w-1.5 h-1.5 bg-white rounded-full pointer-events-none z-[9999] mix-blend-difference opacity-0 transition-opacity duration-300 will-change-transform"></div>
+            <div ref={outerRef} className="fixed top-0 left-0 w-8 h-8 border border-theme-text/40 rounded-full pointer-events-none z-[9999] opacity-0 transition-opacity duration-300 will-change-transform"></div>
+            <div ref={innerRef} className="fixed top-0 left-0 w-1.5 h-1.5 bg-theme-text rounded-full pointer-events-none z-[9999] opacity-0 transition-opacity duration-300 will-change-transform"></div>
         </>
     );
 };
