@@ -91,35 +91,83 @@ const barSeries = [
 
 export const projects: Project[] = [
   {
-    id: "brownian",
-    title: "Brownian Motion Webapp",
-    description: "Interactive stochastic dynamics visualizer with parallelized Euler-Maruyama solver.",
-    longDescription: "A high-performance educational tool designed to build intuition for stochastic calculus. By visualizing the convergence of random walks to continuous Wiener processes, users can interactively explore concepts like Ito's Lemma and geometric volatility.",
+    id: "kalshi-forecasting",
+    title: "Forecasting Competition Finalist (UNC x Kalshi)",
+    description: "Built and analyzed model families for event probability forecasting with 0.998 ROC AUC.",
+    longDescription: "Finalist in a joint forecasting competition between UNC and Kalshi. Developed a multi-model ensemble featuring ARIMA-GARCH, XGBoost, and a custom CARD transformer adapted from long-horizon forecasting research. The project involved rigorous evaluation through MAE, RMSE, Brier score, and Expected Calibration Error (ECE).",
     year: "2025",
-    month: "MAR",
-    tags: ["WebGL", "Physics", "React", "GLSL"],
-    type: "Simulation",
-    role: "Full Stack Engineer",
+    month: "OCT",
+    tags: ["XGBoost", "ARIMA-GARCH", "Python", "Quant"],
+    type: "Research & Competition",
+    role: "Lead Researcher",
     stats: [
-        { label: "Paths", value: "100k+" },
-        { label: "FPS", value: "60" },
-        { label: "Error", value: "<0.5%" }
+        { label: "ROC AUC", value: "0.998" },
+        { label: "Brier Score", value: "0.0271" },
+        { label: "Calib. Gain", value: "23%" }
     ]
   },
   {
-    id: "poker",
+    id: "poker-cfr",
     title: "HUNL Poker CFR",
-    description: "Monte Carlo CFR engine for optimal poker strategy. 95% convergence.",
-    longDescription: "A C++ implementation of Monte Carlo Counterfactual Regret Minimization (MCCFR) for solving Heads-Up No-Limit Texas Hold'em.",
+    description: "Recursive MCCFR engine in C++ for computing equilibrium strategies in HUNL Poker.",
+    longDescription: "Developed a recursive Monte-Carlo Counterfactual Regret Minimization (MCCFR) engine. Implemented regret-matching policy updates and optimized runtime via logic-based clustering, reducing abstraction bins by 90%. Integrated with strategy checkpointing and JSON serialization to support training over 100M+ iterations.",
     year: "2025",
-    month: "FEB",
-    tags: ["C++", "Game Theory", "AI", "OpenMP"],
-    type: "Algorithm",
+    month: "OCT",
+    tags: ["Python", "C++", "Game Theory", "Optimization"],
+    type: "Algorithmic Game Theory",
     role: "Systems Engineer",
     stats: [
-        { label: "Convergence", value: "95%" },
-        { label: "State Redux", value: "90%" },
-        { label: "Speedup", value: "40x" }
+        { label: "Iterations", value: "100M+" },
+        { label: "Bin Redux", value: "90%" },
+        { label: "Convergence", value: "Stable" }
+    ]
+  },
+  {
+    id: "brownian-webapp",
+    title: "Brownian Motion Webapp",
+    description: "Interactive React app visualizing stochastic dynamics with a GPU-efficient solver.",
+    longDescription: "A high-performance web application for visualizing Brownian motion and stochastic effects. Built with TypeScript, Tailwind CSS, and Recharts, it features a parallelized Euler–Maruyama solver that achieves less than 0.5% error relative to analytical methods.",
+    year: "2025",
+    month: "OCT",
+    tags: ["React", "Tailwind", "TypeScript", "Stochastic Calculus"],
+    type: "Web App & Visualization",
+    role: "Frontend Engineer",
+    stats: [
+        { label: "Solver Error", value: "<0.5%" },
+        { label: "Rendering", value: "GPU-Accel" },
+        { label: "Dynamics", value: "Real-time" }
+    ]
+  },
+  {
+    id: "ncaa-predictor",
+    title: "NCAA March Madness Game Predictor",
+    description: "PyTorch-based predictive modeling on 176 team variables with 75% accuracy.",
+    longDescription: "Engineered a predictive pipeline for NCAA tournament simulations using PyTorch. Built a deterministic bracket tree generator and validated models on structured data spanning 176 variables per team, achieving 75% accuracy through multifold training.",
+    year: "2025",
+    month: "JUL",
+    tags: ["Python", "PyTorch", "Pandas", "Data Science"],
+    type: "Predictive Modeling",
+    role: "ML Engineer",
+    stats: [
+        { label: "Accuracy", value: "75%" },
+        { label: "Variables", value: "176" },
+        { label: "Observations", value: "200K" }
+    ]
+  },
+  {
+    id: "terrorism-forecasting",
+    title: "Forecasting Terrorist Events",
+    description: "Global Terrorism Database analysis and Random Forest modeling in R.",
+    longDescription: "Conducted population-normalized analysis using the Global Terrorism Database and World Bank data. Trained Random Forest models using parallel cross-validation in R, producing variable-importance summaries and interactive GIS visualizations.",
+    year: "2025",
+    month: "APR",
+    tags: ["R", "Machine Learning", "GIS", "Data Cleaning"],
+    type: "Data Science & Geospatial",
+    role: "Data Scientist",
+    stats: [
+        { label: "Data Source", value: "GTD" },
+        { label: "Model", value: "Random Forest" },
+        { label: "Validation", value: "Parallel CV" }
     ]
   }
 ];
