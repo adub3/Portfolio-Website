@@ -76,9 +76,29 @@ const BlogPage = ({ onPostSelect, onGraphExpand, theme }: { onPostSelect?: (id: 
                                     }
                                 })}
                             </div>
-                            <div className="mt-24 pt-12 border-t border-theme-border/10 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-theme-text/40">
-                                {newerPost && <button onClick={() => setSelectedPostId(newerPost.id)} className="hover:text-theme-text transition-colors pointer-events-auto">Newer: {newerPost.title}</button>}
-                                {olderPost && <button onClick={() => setSelectedPostId(olderPost.id)} className="ml-auto hover:text-theme-text transition-colors pointer-events-auto">Older: {olderPost.title}</button>}
+                            <div className="mt-24 pt-12 border-t border-theme-border/10 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-theme-text/40 pointer-events-auto">
+                                {newerPost && (
+                                    <button 
+                                        onClick={() => {
+                                            setSelectedPostId(newerPost.id);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }} 
+                                        className="hover:text-theme-text transition-colors"
+                                    >
+                                        ← Newer: {newerPost.title}
+                                    </button>
+                                )}
+                                {olderPost && (
+                                    <button 
+                                        onClick={() => {
+                                            setSelectedPostId(olderPost.id);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }} 
+                                        className="ml-auto hover:text-theme-text transition-colors"
+                                    >
+                                        Older: {olderPost.title} →
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </motion.div>

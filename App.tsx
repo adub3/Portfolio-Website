@@ -86,10 +86,10 @@ const CustomCursor = () => {
              
              if (outerRef.current) {
                  if (isClickable) {
-                     outerRef.current.classList.add('scale-[2.5]', 'bg-white/10', 'border-transparent');
+                     outerRef.current.classList.add('scale-[2.5]', 'bg-white', 'border-transparent');
                      outerRef.current.classList.remove('border-white');
                  } else {
-                     outerRef.current.classList.remove('scale-[2.5]', 'bg-white/10', 'border-transparent');
+                     outerRef.current.classList.remove('scale-[2.5]', 'bg-white', 'border-transparent');
                      outerRef.current.classList.add('border-white');
                  }
              }
