@@ -66,4 +66,5 @@ export interface Project {
     type: string;
     stats: { label: string; value: string }[];
     role: string;
+    image?: string;
 }

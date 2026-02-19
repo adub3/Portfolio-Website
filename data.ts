@@ -100,6 +100,7 @@ export const projects: Project[] = [
     tags: ["XGBoost", "ARIMA-GARCH", "Python", "Quant"],
     type: "Research & Competition",
     role: "Lead Researcher",
+    image: "/Portfolio-Website/images/KalshiGasForcasting.png",
     stats: [
         { label: "ROC AUC", value: "0.998" },
         { label: "Brier Score", value: "0.0271" },
@@ -164,6 +165,7 @@ export const projects: Project[] = [
     tags: ["R", "Machine Learning", "GIS", "Data Cleaning"],
     type: "Data Science & Geospatial",
     role: "Data Scientist",
+    image: "/Portfolio-Website/images/ForecastingTerroristEvents.png",
     stats: [
         { label: "Data Source", value: "GTD" },
         { label: "Model", value: "Random Forest" },

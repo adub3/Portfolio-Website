@@ -84,7 +84,20 @@ const WorkPage = ({
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
                       <div className="lg:col-span-2 space-y-12">
                           <div><h3 className="text-theme-text text-lg font-bold uppercase tracking-widest mb-6 border-l-2 border-theme-text pl-4">About the Project</h3><p className="text-lg text-theme-text leading-relaxed font-serif whitespace-pre-wrap">{selectedProject.longDescription}</p></div>
-                          <div className="w-full h-[400px] bg-theme-text/5 border border-theme-border/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-theme-text/10 transition-colors"><Layers size={48} className="text-theme-text/20 group-hover:text-theme-text/40" /><span className="font-mono text-theme-text/30 text-sm">Interactive Visualization Component</span></div>
+                          {selectedProject.image ? (
+                              <div className="w-full rounded-lg overflow-hidden border border-theme-border/10 bg-theme-text/5">
+                                  <img 
+                                      src={selectedProject.image} 
+                                      alt={selectedProject.title} 
+                                      className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity duration-500"
+                                  />
+                              </div>
+                          ) : (
+                              <div className="w-full h-[400px] bg-theme-text/5 border border-theme-border/10 rounded-lg flex flex-col items-center justify-center gap-4 group hover:bg-theme-text/10 transition-colors">
+                                  <Layers size={48} className="text-theme-text/20 group-hover:text-theme-text/40" />
+                                  <span className="font-mono text-theme-text/30 text-sm">Interactive Visualization Component</span>
+                              </div>
+                          )}
                       </div>
                       <div className="space-y-12">
                           <div className="bg-theme-text/5 p-8 border border-theme-border/10 backdrop-blur-sm"><h4 className="text-theme-text/50 text-xs font-mono uppercase tracking-widest mb-8">Key Metrics</h4><div className="space-y-8">{selectedProject.stats.map((stat, i) => <div key={i}><div className="text-4xl font-bold text-theme-text mb-1">{stat.value}</div><div className="text-sm text-theme-text/40 font-mono">{stat.label}</div></div>)}</div></div>
