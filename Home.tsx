@@ -158,12 +158,15 @@ const HomePage = ({ scrollY, setPage, startAnimations, theme }: { scrollY: numbe
                 <div className="grid grid-cols-1 gap-6 text-base md:text-lg text-theme-text/70 font-mono leading-relaxed relative z-10 max-w-2xl mx-auto">
                     <p>
                         I build systems that translate abstract complexity into tangible results. 
-                        From optimizing poker strategies with CFR to parallelizing Brownian motion 
-                        on the GPU, my work focuses on precision, performance, and interpretability.
+                        From computing Nash Equilibria in HUNL poker via recursive MCCFR to 
+                        parallelizing Brownian motion on the GPU, my work focuses on precision, 
+                        performance, and strategic convergence.
                     </p>
                     <p>
-                        Currently researching at UNC, aiming to solve high-dimensional problems 
-                        where standard libraries fail and custom architecture is required.
+                        Currently researching at Duke's Genomic Data Science & Epidemiology Lab, 
+                        applying survey-weighted regression and GLMs to high-dimensional NHANES 
+                        datasets. I'm investigating the stochastic relationship between allostatic 
+                        load and epigenetic aging clocks like GrimAge and PhenoAge.
                     </p>
                 </div>
             </div>
