@@ -68,7 +68,7 @@ const WorkPage = ({
                 exit="exit"
                 className="relative z-50"
               >
-                  <button onClick={() => setSelectedProjectId(null)} className="group flex items-center gap-2 text-theme-text/50 hover:text-theme-text mb-12 uppercase tracking-widest text-xs font-bold transition-all"><ArrowLeft size={16} /> Back to Index</button>
+                  <button onClick={() => setSelectedProjectId(null)} className="group flex items-center gap-2 text-theme-text/50 hover:text-theme-text mb-12 uppercase tracking-widest text-xs font-bold transition-all"><ArrowLeft size={16} /> Back to Projects</button>
                   <div className="border-b border-theme-border/20 pb-12 mb-12">
                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                            <div>
