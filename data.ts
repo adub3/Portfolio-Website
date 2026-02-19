@@ -326,7 +326,24 @@ export const posts: Post[] = [
                 ],
                 caption: "Table 1: Fundamental differences between probability mass and density."
             }
-          }
-      ]
-  }
-];
+                    }
+                ]
+            },
+            {
+              id: "portfolio-walkthrough",
+              title: "First Post: Inside This Portfolio",
+              excerpt: "A quick look at the stack and design behind this website.",
+              date: "2025.12.08",
+              readTime: "2 min",
+              tag: "Website",
+              content: [
+                { type: 'paragraph', text: "This portfolio is built with React and Three.js, designed to be a clean, pretty way to display some of the work and ideas I explore. The 3D background effects (Dust Motes and Neural Network) are rendered using @react-three/fiber with the help of Gemini." },
+                { type: 'header', text: "The Data Structure" },
+                { type: 'paragraph', text: "All the content you see here, including this very post, is stored in a very simple JSON-like structure within the application code. This makes it easy to update and maintain without a super complex backend." },
+                { type: 'code', lang: 'typescript', code: `const posts: Post[] = [\n  {\n    id: "portfolio-walkthrough",\n    title: "Inside This Portfolio",\n    // ... content ...\n  }\n];` },
+                { type: 'paragraph', text: "Navigating between sections triggers smooth state transitions, with the 3D scene adapting to the different contexts between  the home screen, and connected nodes for the writing section." },
+                { type: 'paragraph', text: "Hopefully there is more to come very shortly!." }
+              ]
+            }
+          ];
+          
