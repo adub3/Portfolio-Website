@@ -47,7 +47,7 @@ const SpotlightCard = ({
         className="pointer-events-none absolute -inset-px transition-opacity duration-300 z-10"
         style={{
           opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, var(--theme-text-rgb, 255,255,255), 0.06), transparent 40%)`,
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(var(--text-rgb), 0.06), transparent 40%)`,
         }}
       >
           <div className="absolute inset-0 bg-theme-text/10" style={{

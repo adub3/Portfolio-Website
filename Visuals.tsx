@@ -60,7 +60,7 @@ export const StarField = ({ theme }: { theme: 'light' | 'dark' }) => {
       </bufferGeometry>
       <shaderMaterial
         transparent
-        blending={THREE.AdditiveBlending}
+        blending={theme === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending}
         depthWrite={false}
         uniforms={uniforms}
         vertexShader={`
@@ -95,13 +95,24 @@ export const NeuralNetworkEffect = ({ theme }: { theme: 'light' | 'dark' }) => {
   const radius = 10; 
   
   // Enhanced colors for Light Mode to be "brighter" and more colorful
-  const colorBlue = useMemo(() => new THREE.Color(theme === 'dark' ? '#1d4ed8' : '#3b82f6'), [theme]);
-  const colorGreen = useMemo(() => new THREE.Color(theme === 'dark' ? '#10b981' : '#059669'), [theme]);
+  const colorBlue = useMemo(() => new THREE.Color('#1d4ed8'), []); // Fixed stable colors
+  const colorBlueLight = useMemo(() => new THREE.Color('#3b82f6'), []);
+  const colorGreen = useMemo(() => new THREE.Color('#10b981'), []);
+  const colorGreenLight = useMemo(() => new THREE.Color('#059669'), []);
   const colorRed = useMemo(() => new THREE.Color('#ef4444'), []);
   const tempColor = useMemo(() => new THREE.Color(), []);
   
   // Dynamic base color: White in Dark Mode, Violet (#8b5cf6) in Light Mode to add vibrancy
-  const colorBase = useMemo(() => new THREE.Color(theme === 'dark' ? '#ffffff' : '#8b5cf6'), [theme]);
+  // We use a stable object and update it
+  const colorBase = useMemo(() => new THREE.Color(), []);
+  const currentColorBlue = useMemo(() => new THREE.Color(), []);
+  const currentColorGreen = useMemo(() => new THREE.Color(), []);
+
+  useEffect(() => {
+      colorBase.set(theme === 'dark' ? '#ffffff' : '#8b5cf6');
+      currentColorBlue.set(theme === 'dark' ? '#1d4ed8' : '#3b82f6');
+      currentColorGreen.set(theme === 'dark' ? '#10b981' : '#059669');
+  }, [theme, colorBase, currentColorBlue, currentColorGreen]);
 
   const particles = useMemo(() => {
     const data = new Float32Array(count * 8);
@@ -195,8 +206,8 @@ export const NeuralNetworkEffect = ({ theme }: { theme: 'light' | 'dark' }) => {
         } else {
              const t = Math.max(0, Math.min(1, (z + 4) / 8));
              const threshold = 0.2; 
-             if (t < threshold) tempColor.lerpColors(colorBlue, colorBase, t / threshold);
-             else tempColor.lerpColors(colorBase, colorGreen, (t - threshold) / (1 - threshold));
+             if (t < threshold) tempColor.lerpColors(currentColorBlue, colorBase, t / threshold);
+             else tempColor.lerpColors(colorBase, currentColorGreen, (t - threshold) / (1 - threshold));
              pointColors[i*3] = tempColor.r; pointColors[i*3+1] = tempColor.g; pointColors[i*3+2] = tempColor.b;
              pointOpacities[i] = 1.0;
         }
@@ -369,8 +380,12 @@ export const LorenzAttractor = ({ theme }: { theme: 'light' | 'dark' }) => {
     const tempColor = useMemo(() => new THREE.Color(), []);
     const colorSlow = useMemo(() => new THREE.Color('#1d4ed8'), []);
     
-    // In light mode, accelerate to a vibrant Pink (#db2777) instead of Black for visual flair
-    const colorFast = useMemo(() => new THREE.Color(theme === 'dark' ? '#ffffff' : '#db2777'), [theme]);
+    // Stable color object updated via useEffect
+    const colorFast = useMemo(() => new THREE.Color(), []);
+    
+    useEffect(() => {
+        colorFast.set(theme === 'dark' ? '#ffffff' : '#db2777');
+    }, [theme, colorFast]);
     
     // Zoom factor for visuals
     const ZOOM = 0.35;
@@ -400,9 +415,6 @@ export const LorenzAttractor = ({ theme }: { theme: 'light' | 'dark' }) => {
         if (!groupRef.current) return;
         groupRef.current.rotation.y += 0.001;
         
-        // Update fast color reference in loop (though optimized to only change on theme)
-        colorFast.set(theme === 'dark' ? '#ffffff' : '#db2777');
-
         trajectories.forEach((traj, i) => {
             let { x, y, z } = traj.current;
             const dx = traj.sigma * (y - x) * traj.dt, dy = (x * (traj.rho - z) - y) * traj.dt, dz = (x * y - traj.beta * z) * traj.dt;
@@ -438,7 +450,13 @@ export const LorenzAttractor = ({ theme }: { theme: 'light' | 'dark' }) => {
                         <bufferAttribute attach="attributes-position" count={trailLength} array={traj.history} itemSize={3} />
                         <bufferAttribute attach="attributes-color" count={trailLength} array={new Float32Array(trailLength * 3)} itemSize={3} />
                     </bufferGeometry>
-                    <lineBasicMaterial vertexColors transparent opacity={0.3} blending={THREE.AdditiveBlending} depthWrite={false} />
+                    <lineBasicMaterial 
+                        vertexColors 
+                        transparent 
+                        opacity={theme === 'dark' ? 0.3 : 0.6} 
+                        blending={theme === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending} 
+                        depthWrite={false} 
+                    />
                 </line>
             ))}
         </group>
@@ -499,7 +517,7 @@ export const AuroraBorealis = ({ theme, opacity = 1 }: { theme: 'light' | 'dark'
                 uniforms={uniforms}
                 transparent
                 depthWrite={false}
-                blending={THREE.AdditiveBlending}
+                blending={theme === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending}
                 vertexShader={`
                     varying vec2 vUv;
                     void main() {

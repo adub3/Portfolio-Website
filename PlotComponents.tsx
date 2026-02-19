@@ -231,7 +231,7 @@ export const ThreeDGraph = ({ data, onExpandChange, theme }: { data: GraphData, 
                     <button onClick={() => setIsExpanded(true)} className="p-2 hover:bg-theme-text/10 rounded-full transition-colors text-theme-text/30 hover:text-theme-text pointer-events-auto"><Maximize2 size={16} /></button>
                 </div>
                 <div className="w-full aspect-[2/1] bg-theme-text/5 rounded-xl overflow-hidden relative cursor-move border border-theme-border/10">
-                    {loading && <div className="absolute inset-0 flex items-center justify-center bg-black/40"><Loader2 className="animate-spin text-white/20" /></div>}
+                    {loading && <div className="absolute inset-0 flex items-center justify-center bg-theme-bg/40"><Loader2 className={theme === 'light' ? 'text-black/20' : 'text-white/20'} /></div>}
                     {!loading && <Canvas camera={{ position: [2, 2, 2], fov: 50 }}><GraphScene normalizedSeries={normalizedSeries} originalSeries={visibleSeries} isExpanded={false} theme={theme} labels={labels} /></Canvas>}
                 </div>
             </motion.div>
@@ -249,7 +249,7 @@ export const ThreeDGraph = ({ data, onExpandChange, theme }: { data: GraphData, 
                                 </div>
                                 <div className="flex-1 flex min-h-0">
                                     <div className="flex-1 relative p-8 flex items-center justify-center bg-theme-text/5">
-                                        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-theme-border/10 bg-black/5 shadow-2xl relative cursor-move">
+                                        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-theme-border/10 bg-theme-bg/5 shadow-2xl relative cursor-move">
                                             {!loading && <Canvas camera={{ position: [2, 2, 2], fov: 50 }}><GraphScene normalizedSeries={normalizedSeries} originalSeries={visibleSeries} isExpanded={true} theme={theme} labels={labels} /></Canvas>}
                                         </div>
                                     </div>
@@ -266,7 +266,7 @@ export const ThreeDGraph = ({ data, onExpandChange, theme }: { data: GraphData, 
     );
 };
 
-export const InteractiveGraph = ({ data, onExpandChange }: { data: GraphData, onExpandChange?: (expanded: boolean) => void }) => {
+export const InteractiveGraph = ({ data, onExpandChange, theme }: { data: GraphData, onExpandChange?: (expanded: boolean) => void, theme: 'light' | 'dark' }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const expandedContainerRef = useRef<HTMLDivElement>(null);
     const [hoverX, setHoverX] = useState<number | null>(null);
@@ -480,7 +480,7 @@ export const InteractiveGraph = ({ data, onExpandChange }: { data: GraphData, on
                                     x1={toX(p.x)} y1={yBase} x2={toX(p.x)} y2={toY(p.y)} stroke={s.color} strokeWidth="2" strokeOpacity={hoverX === p.x ? 1 : 0.6}
                                     initial={{ y2: yBase }} animate={{ y2: toY(p.y) }}
                                 />
-                                <circle cx={toX(p.x)} cy={toY(p.y)} r={hoverX === p.x ? 5 : 3.5} fill="#000" stroke={s.color} strokeWidth="2" />
+                                <circle cx={toX(p.x)} cy={toY(p.y)} r={hoverX === p.x ? 5 : 3.5} fill={theme === 'light' ? '#ffffff' : '#000000'} stroke={s.color} strokeWidth="2" />
                             </g>
                         ))}
                         {isBar && s.data.map((p, i) => {
@@ -570,7 +570,7 @@ export const InteractiveGraph = ({ data, onExpandChange }: { data: GraphData, on
                                 </div>
                                 <div className="flex-1 flex min-h-0">
                                     <div className="flex-1 relative p-8 flex items-center justify-center bg-theme-text/5">
-                                        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-theme-border/10 bg-black/5 shadow-inner flex items-center justify-center p-12">
+                                        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-theme-border/10 bg-theme-bg/5 shadow-inner flex items-center justify-center p-12">
                                             {renderSVG(expandedContainerRef)}
                                         </div>
                                     </div>

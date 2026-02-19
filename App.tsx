@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -244,51 +243,56 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
 // --- TRANSITION OVERLAY ---
 
-const TransitionOverlay = ({ stage, label, direction }: { stage: 'idle' | 'start' | 'middle' | 'end'; label: string; direction: 'left' | 'right'; }) => {
+const TransitionOverlay = ({ stage, label, direction, theme }: { stage: 'idle' | 'start' | 'middle' | 'end'; label: string; direction: 'left' | 'right'; theme: 'dark' | 'light'; }) => {
   const [displayedText, setDisplayedText] = useState("");
   useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval>;
     if (stage === 'middle') {
-        const timeoutId = setTimeout(() => {
-            const textToType = label.toUpperCase();
-            let charIndex = 0;
-            setDisplayedText("");
-            const intervalId = setInterval(() => {
-                if (charIndex <= textToType.length) { 
-                    setDisplayedText(textToType.slice(0, charIndex)); 
-                    charIndex++; 
-                } else {
-                    clearInterval(intervalId);
-                }
-            }, 50); 
-            return () => clearInterval(intervalId);
-        }, 200);
-        return () => clearTimeout(timeoutId);
-    } else {
+        const textToType = label.toUpperCase();
+        let charIndex = 0;
+        setDisplayedText("");
+        intervalId = setInterval(() => {
+            if (charIndex <= textToType.length) { 
+                setDisplayedText(textToType.slice(0, charIndex)); 
+                charIndex++; 
+            } else {
+                clearInterval(intervalId);
+            }
+        }, 60); 
+    } else if (stage === 'idle' || stage === 'start') {
         setDisplayedText("");
     }
+    return () => clearInterval(intervalId);
   }, [stage, label]);
 
   if (stage === 'idle') return null;
 
   const isRight = direction === 'right'; 
   const variants = {
-      initial: { x: isRight ? '100%' : '-100%' },
-      enter: { x: '0%', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
-      exit: { x: isRight ? '-100%' : '100%', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+      start: { x: isRight ? '100%' : '-100%' },
+      middle: { x: '0%' },
+      end: { x: isRight ? '-100%' : '100%' }
   };
 
-  let animate = "initial";
-  if (stage === 'middle') animate = "enter";
-  if (stage === 'end') animate = "exit";
+  let animate = "start";
+  if (stage === 'middle') animate = "middle";
+  if (stage === 'end') animate = "end";
+
+  const bgColor = "var(--theme-bg)";
 
   return (
-    <div className="fixed inset-0 z-[200] pointer-events-none flex flex-row items-stretch overflow-hidden">
+    <div className="fixed inset-0 z-[1000] pointer-events-none flex flex-row items-stretch overflow-hidden">
         <motion.div 
-          initial="initial" 
+          initial="start" 
           animate={animate} 
           variants={variants} 
-          className="relative w-full h-full bg-theme-bg flex items-center justify-center pointer-events-auto"
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0 flex items-center justify-center pointer-events-auto"
+          style={{ backgroundColor: bgColor }}
         >
+            <svg className={`absolute w-[15vh] h-[120%] fill-current transform ${isRight ? '-left-[14.5vh]' : '-right-[14.5vh] rotate-180'}`} style={{ color: bgColor }} viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0,0 C30,20 30,80 0,100 L100,100 L100,0 Z"></path>
+            </svg>
             <div className="relative z-10 overflow-hidden flex items-baseline">
                 <h2 className="text-4xl md:text-9xl font-bold text-theme-text tracking-tighter uppercase font-sans min-h-[1.2em]">
                     {displayedText}<span className="animate-pulse text-theme-text/50 ml-1">_</span>
@@ -330,7 +334,16 @@ export default function FluidPortfolio() {
 
   // Theme application
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
+    // Also keep data-theme for any legacy selector reliance
+    root.setAttribute('data-theme', theme);
   }, [theme]);
 
   // Cleanup effect: when leaving a detailed view (post or project), reset visual states
@@ -357,38 +370,34 @@ export default function FluidPortfolio() {
       setIsMenuOpen(false);
       setTransitionLabel(newPage);
       
-      // Phase 1: Mount component in 'start' position (off-screen)
       setTransitionStage('start');
       
-      // Phase 2: Animate to 'middle' (on-screen)
-      // Use requestAnimationFrame to ensure the 'start' state is registered before animating to 'middle'
-      requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-              setTransitionStage('middle');
-          });
-      });
-      
-      // Schedule Phase 3
+      // Small delay to ensure the 'start' state is rendered before animating to 'middle'
       setTimeout(() => {
-          // Perform state updates while hidden
-          setCurrentPage(newPage);
-          setSelectedProjectId(null); 
-          setSelectedPostId(null);
-          setIsGraphExpanded(false);
-          window.scrollTo(0, 0);
-
-          // Phase 3: Animate to 'end' (exit to other side)
-          setTransitionStage('end');
+          setTransitionStage('middle');
           
-          // Cleanup
           setTimeout(() => {
-              setTransitionStage('idle');
-          }, 850); // Matches exit duration
-      }, 1200); // Wait for enter + idle time
+            setCurrentPage(newPage);
+            setSelectedProjectId(null); 
+            setSelectedPostId(null);
+            setIsGraphExpanded(false);
+            window.scrollTo(0, 0);
+            
+            setTimeout(() => {
+                setTransitionStage('end');
+                setTimeout(() => {
+                  setTransitionStage('idle');
+                }, 850);
+            }, 800);
+          }, 1000);
+      }, 100); // Increased from 50ms for better mount-to-animate reliability
   };
 
   const toggleTheme = () => {
-      setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+      setTheme(prev => {
+          const newTheme = prev === 'dark' ? 'light' : 'dark';
+          return newTheme;
+      });
   };
 
   let canvasOpacity = 1;
@@ -431,7 +440,6 @@ export default function FluidPortfolio() {
     >
         <CustomCursor />
         {!introFinished && <IntroOverlay onComplete={() => setIntroFinished(true)} />}
-        <TransitionOverlay stage={transitionStage} label={transitionLabel} direction={transitionDirection} />
 
         {/* --- THE BACKGROUND CANVAS --- */}
         <div 
@@ -503,6 +511,19 @@ export default function FluidPortfolio() {
                 {currentPage === 'writing' && <BlogPage onPostSelect={setSelectedPostId} onGraphExpand={setIsGraphExpanded} theme={theme} />}
             </div>
         </main>
+
+        {/* Transition Overlay moved to bottom for guaranteed stacking priority */}
+        <AnimatePresence>
+            {transitionStage !== 'idle' && (
+                <TransitionOverlay 
+                    key={transitionLabel || 'transition'}
+                    stage={transitionStage} 
+                    label={transitionLabel} 
+                    direction={transitionDirection} 
+                    theme={theme} 
+                />
+            )}
+        </AnimatePresence>
     </div>
   );
 }

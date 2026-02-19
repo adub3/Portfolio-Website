@@ -1,39 +1,83 @@
+@import "tailwindcss";
 
-html {
-  scroll-behavior: smooth;
-  background-color: rgb(var(--bg-rgb));
-  cursor: none !important;
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
+@theme {
+  /* Colors */
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-text: var(--theme-text);
+  --color-theme-border: var(--theme-border);
+  --color-theme-surface: var(--theme-surface);
+
+  /* Fonts */
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "Courier Prime", monospace;
+
+  /* Animations */
+  --animate-fade-in: fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  --animate-draw: drawPath 1.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+  --animate-spin-slow: spin 12s linear infinite;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(40px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes drawPath {
+    0% { stroke-dasharray: 0, 1000; }
+    100% { stroke-dasharray: 1000, 0; }
+  }
 }
 
-body {
-  background-color: rgb(var(--bg-rgb));
-  color: rgb(var(--text-rgb));
-  cursor: none !important;
-  transition: background-color 0.5s ease, color 0.5s ease;
+/* 
+  Theme Variables 
+*/
+
+/* Dark Mode (Default / .dark) */
+:root, .dark {
+  --theme-bg: #0a0a0a;
+  --theme-text: #ffffff;
+  --theme-border: #ffffff;
+  --theme-surface: #ffffff;
+  
+  --bg-rgb: 10, 10, 10;
+  --text-rgb: 255, 255, 255;
+  
+  color-scheme: dark;
 }
 
-:root {
-    /* Dark Mode (Default) */
-    --bg-rgb: 10 10 10;
-    --text-rgb: 255 255 255;
-    --border-rgb: 255 255 255;
-    --surface-rgb: 255 255 255;
+/* Light Mode Override */
+.light:not(.dark) {
+  --theme-bg: #ffffff;
+  --theme-text: #000000;
+  --theme-border: #000000;
+  --theme-surface: #000000;
+
+  --bg-rgb: 255, 255, 255;
+  --text-rgb: 0, 0, 0;
+  
+  color-scheme: light;
 }
 
-:root[data-theme='light'] {
-    /* Light Mode */
-    --bg-rgb: 255 255 255;
-    --text-rgb: 0 0 0;
-    --border-rgb: 0 0 0;
-    --surface-rgb: 0 0 0;
+@layer base {
+  html, body {
+    @apply transition-colors duration-500;
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    scroll-behavior: smooth;
+    cursor: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Force hide cursor on all interactive elements */
+  a, button, [role="button"], input, textarea, select {
+    cursor: none !important;
+  }
 }
 
-/* Force hide cursor on all interactive elements */
-a, button, [role="button"], input, textarea, select {
-  cursor: none !important;
-}
-
-/* Utility for staggering */
+/* Utility for staggering animations */
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
