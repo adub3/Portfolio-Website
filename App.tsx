@@ -65,6 +65,8 @@ const CustomCursor = () => {
     const innerRef = useRef<HTMLDivElement>(null);
     const pos = useRef({ x: 0, y: 0 });
     const mouse = useRef({ x: 0, y: 0 });
+    const scale = useRef(1);
+    const targetScale = useRef(1);
     const isActive = useRef(false);
 
     useEffect(() => {
@@ -83,13 +85,14 @@ const CustomCursor = () => {
         const onMouseOver = (e: MouseEvent) => {
              const target = e.target as HTMLElement;
              const isClickable = target.closest('a, button, [role="button"], input, textarea, .cursor-pointer, .group');
+             targetScale.current = isClickable ? 2.5 : 1;
              
              if (outerRef.current) {
                  if (isClickable) {
-                     outerRef.current.classList.add('scale-[2.5]', 'bg-white', 'border-transparent');
+                     outerRef.current.classList.add('bg-white', 'border-transparent');
                      outerRef.current.classList.remove('border-white');
                  } else {
-                     outerRef.current.classList.remove('scale-[2.5]', 'bg-white', 'border-transparent');
+                     outerRef.current.classList.remove('bg-white', 'border-transparent');
                      outerRef.current.classList.add('border-white');
                  }
              }
@@ -100,10 +103,19 @@ const CustomCursor = () => {
 
         let rafId: number;
         const loop = () => {
+            // Smoothly interpolate position
             pos.current.x += (mouse.current.x - pos.current.x) * 0.15;
             pos.current.y += (mouse.current.y - pos.current.y) * 0.15;
-            if (outerRef.current) outerRef.current.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0) translate(-50%, -50%)`;
-            if (innerRef.current) innerRef.current.style.transform = `translate3d(${mouse.current.x}px, ${mouse.current.y}px, 0) translate(-50%, -50%)`;
+            
+            // Smoothly interpolate scale
+            scale.current += (targetScale.current - scale.current) * 0.15;
+
+            if (outerRef.current) {
+                outerRef.current.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0) translate(-50%, -50%) scale(${scale.current})`;
+            }
+            if (innerRef.current) {
+                innerRef.current.style.transform = `translate3d(${mouse.current.x}px, ${mouse.current.y}px, 0) translate(-50%, -50%)`;
+            }
             rafId = requestAnimationFrame(loop);
         };
         loop();
@@ -117,7 +129,7 @@ const CustomCursor = () => {
 
     return (
         <>
-            <div ref={outerRef} className="fixed top-0 left-0 w-8 h-8 border border-white rounded-full pointer-events-none z-[9999] mix-blend-difference opacity-0 transition-opacity duration-300 transition-transform ease-out will-change-transform"></div>
+            <div ref={outerRef} className="fixed top-0 left-0 w-8 h-8 border border-white rounded-full pointer-events-none z-[9999] mix-blend-difference opacity-0 transition-opacity duration-300 will-change-transform"></div>
             <div ref={innerRef} className="fixed top-0 left-0 w-1.5 h-1.5 bg-white rounded-full pointer-events-none z-[9999] mix-blend-difference opacity-0 transition-opacity duration-300 will-change-transform"></div>
         </>
     );
