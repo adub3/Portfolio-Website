@@ -106,7 +106,7 @@ const BlogPage = ({ onPostSelect, onGraphExpand, theme }: { onPostSelect?: (id: 
                     <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                         <div className="mb-24 opacity-0 animate-fade-in delay-500">
                             <h1 className="text-7xl md:text-[9rem] font-bold mb-8 tracking-tighter text-theme-text leading-[0.8]">Blog<br/><span className="text-theme-text/30">Posts</span></h1>
-                            <p className="text-xl text-theme-text/60 max-w-lg font-mono text-sm uppercase tracking-widest mt-8 border-t border-theme-border/20 pt-4">Dispatches from my journey through computational theory and the mechanics of simulation.</p>
+                            <p className="text-xl text-theme-text/60 max-w-lg font-mono text-sm uppercase tracking-widest mt-8 border-t border-theme-border/20 pt-4">Quick dives into maths, RL, and other simulations.</p>
                         </div>
                         <div className="grid grid-cols-1 gap-16">
                             {posts.map((post, i) => (
